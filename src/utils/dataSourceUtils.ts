@@ -358,24 +358,40 @@ export async function loadRows(
         try {
           let rows: any[] = []
           if (source.type === "json" && source.endpoint) {
-            rows = await fetchRemoteJson(
-              source.endpoint,
-              source.httpMethod || "GET",
-              source.authType,
-              source.authConfig
-            )
+            // Vérification spéciale pour les données de démonstration
+            if (source.endpoint.includes('/api/sources/demo/ventes') ||
+              source.endpoint.endsWith('/demo/ventes')) {
+              console.log('[DEMO] Chargement direct des données de démonstration');
+              // Charger directement les données de démonstration sans appel HTTP
+              rows = require("../data/ventes-exemple.json");
+            } else {
+              rows = await fetchRemoteJson(
+                source.endpoint,
+                source.httpMethod || "GET",
+                source.authType,
+                source.authConfig
+              )
+            }
           } else if (
             source.type === "csv" &&
             (source.endpoint || source.filePath)
           ) {
-            rows = source.filePath
-              ? await readCsvFile(source.filePath)
-              : await fetchRemoteCsv(
-                source.endpoint!,
-                source.httpMethod!,
-                source.authType!,
-                source.authConfig
-              )
+            // Vérification spéciale pour les données de démonstration CSV
+            if (source.endpoint && (source.endpoint.includes('/api/sources/demo/') ||
+              source.endpoint.endsWith('/demo/ventes'))) {
+              console.log('[DEMO] Chargement direct des données de démonstration CSV');
+              // Pour les démos CSV, on peut utiliser les mêmes données JSON
+              rows = require("../data/ventes-exemple.json");
+            } else {
+              rows = source.filePath
+                ? await readCsvFile(source.filePath)
+                : await fetchRemoteCsv(
+                  source.endpoint!,
+                  source.httpMethod!,
+                  source.authType!,
+                  source.authConfig
+                )
+            }
           }
 
           if (hasTimestampField(source) && source.timestampField && (from || to)) {

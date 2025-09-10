@@ -269,16 +269,33 @@ const dataSourceService = {
     options: FetchOptions = {}
   ): Promise<ApiResponse<Record<string, any>[]> & { total?: number }> {
     try {
+      // Logs de débogage pour Vercel
+      console.log(`[FETCH_DATA] Début - sourceId: ${sourceId}`);
+      console.log(`[FETCH_DATA] Options:`, JSON.stringify(options));
+      console.log(`[FETCH_DATA] Environnement: ${process.env.NODE_ENV || 'undefined'}`);
+      console.log(`[FETCH_DATA] VERCEL: ${process.env.VERCEL || 'undefined'}`);
+
       // 1. Vérification du partage
       if (options.shareId) {
+        console.log(`[FETCH_DATA] Vérification partage pour shareId: ${options.shareId}`);
         const shareCheck = await verifyShareAccess(sourceId, options.shareId)
-        if (shareCheck?.error) return shareCheck.error
+        if (shareCheck?.error) {
+          console.log(`[FETCH_DATA] Erreur partage:`, shareCheck.error);
+          return shareCheck.error;
+        }
       }
 
       // 2. Chargement de la source
+      console.log(`[FETCH_DATA] Chargement source: ${sourceId}`);
       const srcOrError = await getDataSourceOrError(sourceId)
-      if ("error" in srcOrError) return srcOrError.error
+      if ("error" in srcOrError) {
+        console.log(`[FETCH_DATA] Erreur chargement source:`, srcOrError.error);
+        return srcOrError.error;
+      }
       const source = srcOrError as IDataSource
+      console.log(`[FETCH_DATA] Source trouvée - type: ${source.type}, endpoint: ${source.endpoint}`);
+      console.log(`[FETCH_DATA] Source filePath: ${source.filePath}`);
+      console.log(`[FETCH_DATA] Source ownerId: ${source.ownerId}`);
 
       // 3. Traitement direct Elasticsearch
       if (
