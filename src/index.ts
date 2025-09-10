@@ -18,6 +18,10 @@ dotenv.config();
 const app: Express = express();
 const port = Number(process.env.PORT) || 7000;
 
+const allowedOrigins = process.env.CORS_ALLOW_ORIGINS
+  ? process.env.CORS_ALLOW_ORIGINS.split(',').map(origin => origin.trim())
+  : [process.env.CORS_ORIGIN || 'http://localhost:5173'];
+
 // Connect to MongoDB
 connectDB();
 
@@ -25,7 +29,23 @@ connectDB();
 app.use(express.json());
 
 // CORS configuration
-app.use(cors());
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permettre les requêtes sans origine (comme les applications mobiles ou les tests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Non autorisé par la politique CORS'));
+    }
+  },
+  // Permettre les cookies et les headers d'authentification
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
 // Routes
 app.get("/", (req, res) => {
@@ -34,6 +54,16 @@ app.get("/", (req, res) => {
 
 app.get('/health', (req: Request, res: Response) => {
   res.json({ message: 'Application Running, Mongo Status:' + mongoose.connection.readyState });
+});
+
+// Route de test pour la configuration CORS
+app.get('/cors-test', (req: Request, res: Response) => {
+  res.json({
+    message: 'Configuration CORS active',
+    origin: req.get('Origin') || 'Aucune origine',
+    allowedOrigins: allowedOrigins,
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.use("/api/auth", authRoutes);
