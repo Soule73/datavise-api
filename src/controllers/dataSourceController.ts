@@ -230,37 +230,31 @@ const dataSourceController = {
    * Envoie un fichier d'exemple de données de ventes.
    * @param {Request} req - La requête HTTP.
    * @param {Response} res - La réponse HTTP.
-   * @returns {Promise<Response | void>} - Envoie le fichier JSON d'exemple.
+   * @returns {Promise<void>} - Envoie le fichier JSON d'exemple.
    *
    * NOTE: cette méthode peur étre supprimée si elle n'est pas utilisée.
    * Elle est utilisée pour fournir un exemple de données de ventes.
    */
-  async demoVentes(req: Request, res: Response): Promise<Response | void> {
+  async demoVentes(req: Request, res: Response): Promise<void> {
     try {
-      const filePath = path.resolve(__dirname, "../data/ventes-exemple.json");
+      // Utiliser require() pour importer le JSON directement comme tableau
+      const ventesData = require("../data/ventes-exemple.json");
 
-      // Vérifier si le fichier existe
-      if (!fs.existsSync(filePath)) {
-        res.status(404).json({
+      // Vérifier que c'est bien un tableau
+      if (!Array.isArray(ventesData)) {
+        console.error('Les données de ventes ne sont pas un tableau:', typeof ventesData);
+        res.status(500).json({
           success: false,
-          message: "Fichier de démonstration non trouvé"
+          message: "Format de données invalide"
         });
         return;
       }
 
-      // Lire et parser le fichier JSON
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-      const ventesData = JSON.parse(fileContent);
-
-      // Renvoyer les données JSON avec les en-têtes appropriés
+      // Renvoyer directement le tableau sans wrapper
       res.setHeader('Content-Type', 'application/json');
-      res.json({
-        success: true,
-        data: ventesData,
-        message: "Données de démonstration des ventes"
-      });
+      res.json(ventesData);
     } catch (error) {
-      console.error('Erreur lors de la lecture du fichier de démonstration:', error);
+      console.error('Erreur lors de la récupération des données de démonstration:', error);
       res.status(500).json({
         success: false,
         message: "Erreur lors de la récupération des données de démonstration"
