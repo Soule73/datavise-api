@@ -144,4 +144,15 @@ router.get(
   userController.listUsers
 );
 
+/**
+ * Route pour récupérer le profil de l'utilisateur authentifié.
+ *
+ * @route GET /profile
+ */
+router.get(
+  "/profile",
+  requireAuth,
+  userController.getProfile
+);
+
 export default router;

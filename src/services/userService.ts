@@ -34,7 +34,7 @@ import type {
 import { buildErrorObject } from "../utils/validationUtils";
 import mongoose, { ObjectId } from "mongoose";
 import { ApiResponse } from "../types/api";
-import { toApiData, toApiError } from "../utils/api";
+import { toApiData, toApiError, toApiSuccess } from "../utils/api";
 
 /**
  * Retourne une version "sanitisée" d'un utilisateur, sans mot de passe.
@@ -138,8 +138,8 @@ const userService = {
         : 0,
     };
     const token = generateToken(userSigned);
-    return {
-      data: {
+    return toApiSuccess(
+      {
         user: {
           id: userId,
           username: createdUser.username,
@@ -148,7 +148,8 @@ const userService = {
         },
         token,
       },
-    };
+      "Utilisateur créé avec succès"
+    );
   },
 
   /**
@@ -209,8 +210,8 @@ const userService = {
         ? userPopulated.passwordChangedAt.getTime()
         : 0,
     });
-    return {
-      data: {
+    return toApiSuccess(
+      {
         user: {
           id: userPopId,
           username: userPopulated.username,
@@ -219,7 +220,8 @@ const userService = {
         },
         token,
       },
-    };
+      "Connexion réussie"
+    );
   },
 
   /**
@@ -247,7 +249,7 @@ const userService = {
       "roleId",
       "name"
     );
-    return toApiData({ user: sanitizeUser(userPopulated) });
+    return toApiSuccess({ user: sanitizeUser(userPopulated) }, "Utilisateur créé avec succès");
   },
 
   /**
@@ -281,7 +283,7 @@ const userService = {
     if (!user) {
       return toApiError("Utilisateur non trouvé.", 404);
     }
-    return { data: { user: sanitizeUser(user) } };
+    return toApiSuccess({ user: sanitizeUser(user) }, "Utilisateur mis à jour avec succès");
   },
 
   /**
@@ -310,7 +312,7 @@ const userService = {
       return toApiError("Utilisateur non trouvé.", 404);
     }
 
-    return toApiData({ message: "Utilisateur supprimé." });
+    return toApiSuccess({ message: "Utilisateur supprimé." }, "Utilisateur supprimé avec succès");
   },
 
   /**
@@ -339,7 +341,7 @@ const userService = {
       canDelete: !roleUsage[r._id?.toString()],
     }));
 
-    return toApiData(rolesMap);
+    return toApiSuccess(rolesMap, "Liste des rôles récupérée avec succès");
   },
 
   /**
@@ -359,7 +361,7 @@ const userService = {
       return toApiError("Une ou plusieurs permissions sont invalides.", 400);
     }
     const role = await Role.create({ name, description, permissions });
-    return toApiData(role);
+    return toApiSuccess(role, "Rôle créé avec succès");
   },
 
   /**
@@ -391,7 +393,7 @@ const userService = {
     if (!role) {
       return toApiError("Rôle non trouvé.", 404);
     }
-    return toApiData(role);
+    return toApiSuccess(role, "Rôle mis à jour avec succès");
   },
 
   /**
@@ -414,7 +416,7 @@ const userService = {
       return toApiError("Rôle non trouvé.", 404);
     }
 
-    return toApiData({ message: "Rôle supprimé." });
+    return toApiSuccess({ message: "Rôle supprimé." }, "Rôle supprimé avec succès");
   },
 
   /**
@@ -424,7 +426,7 @@ const userService = {
   async listPermissions(): Promise<ApiResponse<IPermission[]>> {
     const permissions = await Permission.find();
 
-    return toApiData(permissions);
+    return toApiSuccess(permissions, "Liste des permissions récupérée avec succès");
   },
 
   /**
@@ -434,7 +436,25 @@ const userService = {
   async listUsers(): Promise<ApiResponse<IUser[]>> {
     const users = await User.find().populate("roleId", "name");
 
-    return toApiData(users.map(sanitizeUser));
+    return toApiSuccess(users.map(sanitizeUser), "Liste des utilisateurs récupérée avec succès");
+  },
+
+  /**
+   * Récupère le profil de l'utilisateur authentifié.
+   * @param {string} userId - L'ID de l'utilisateur.
+   * @returns {Promise<ApiResponse<{ user: IUser }>>} - La réponse contenant le profil de l'utilisateur.
+   */
+  async getProfile(userId: string): Promise<ApiResponse<{ user: IUser }>> {
+    const user = await User.findById(userId).populate({
+      path: "roleId",
+      populate: { path: "permissions" },
+    });
+
+    if (!user) {
+      return toApiError("Utilisateur non trouvé.", 404);
+    }
+
+    return toApiSuccess({ user: sanitizeUser(user) }, "Profil utilisateur récupéré avec succès");
   },
 };
 

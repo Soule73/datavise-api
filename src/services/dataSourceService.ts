@@ -21,9 +21,9 @@ import type {
   FetchOptions,
   IDataSource,
 } from "../types/sourceType";
-import type { ApiResponse, ApiData } from "../types/api";
+import type { ApiResponse } from "../types/api";
 import { sourceCache } from "../utils/sourceCache";
-import { toApiData, toApiError } from "../utils/api";
+import { toApiError, toApiSuccess } from "../utils/api";
 import { dataSourceSchema } from "../validation/dataSource";
 import { buildErrorObject } from "../utils/validationUtils";
 import {
@@ -40,11 +40,11 @@ const dataSourceService = {
   /**
    * Liste toutes les sources de données avec indication d'utilisation par au moins un widget.
    * Chaque source est enrichie d'un champ `isUsed` indiquant si elle est utilisée par au moins un widget.
-   * @return {Promise<ApiData<(DataSource & { isUsed: boolean })[]>>} - La liste des sources de données avec leur état d'utilisation.
+   * @return {Promise<ApiResponse<(DataSource & { isUsed: boolean })[]>>} - La liste des sources de données avec leur état d'utilisation.
    * @return {ApiError} - Si une erreur se produit lors de la récupération des sources de données.
    * @description Cette méthode récupère toutes les sources de données depuis la base de données,
    */
-  async list(): Promise<ApiData<(IDataSource & { isUsed: boolean })[]>> {
+  async list(): Promise<ApiResponse<(IDataSource & { isUsed: boolean })[]>> {
     const sources = await DataSource.find();
 
     const sourcesWithUsage = await Promise.all(
@@ -54,7 +54,7 @@ const dataSourceService = {
       })
     );
 
-    return toApiData(sourcesWithUsage);
+    return toApiSuccess(sourcesWithUsage, "Sources récupérées avec succès");
   },
 
 
@@ -80,7 +80,7 @@ const dataSourceService = {
       parseResult.data,
     );
 
-    return toApiData(source);
+    return toApiSuccess(source);
   },
 
 
@@ -102,7 +102,7 @@ const dataSourceService = {
 
     const count = await Widget.countDocuments({ dataSourceId: source._id });
 
-    return toApiData({ ...source.toObject(), isUsed: count > 0 });
+    return toApiSuccess({ ...source.toObject(), isUsed: count > 0 });
   },
 
 
@@ -167,7 +167,7 @@ const dataSourceService = {
       await fs.unlink(oldFilePath);
     }
 
-    return toApiData(source);
+    return toApiSuccess(source);
   },
 
 
@@ -202,7 +202,7 @@ const dataSourceService = {
       } catch (e) { }
     }
 
-    return toApiData({ message: "Source supprimée." });
+    return toApiSuccess({ message: "Source supprimée." });
   },
 
 
@@ -235,7 +235,8 @@ const dataSourceService = {
         }
         const { columns, preview } = await detectColumnsElasticsearch(dataSource)
         const types = inferColumnTypes(preview, columns)
-        return { data: { columns, preview, types } }
+        // return { data: { columns, preview, types } }
+        return toApiSuccess({ columns, preview, types })
       }
 
       // Cas CSV/JSON
@@ -245,7 +246,7 @@ const dataSourceService = {
       }
 
       const result = buildColumnsResult(rows)
-      return { data: result }
+      return toApiSuccess(result, "Colonnes détectées avec succès")
     } catch (e: unknown) {
       return toApiError(
         e instanceof Error ? e.message : "Erreur lors de la détection des colonnes.",
@@ -260,69 +261,86 @@ const dataSourceService = {
    * Récupère les données d'une source de données avec gestion du cache et pagination.
    * @param {string} sourceId - L'identifiant de la source de données.
    * @param {FetchOptions} options - Les options de récupération des données (pagination, filtrage, etc.).
-   * @return {Promise<ApiResponse<any[]> & { total?: number }>} - La réponse contenant les données récupérées.
+   * @return {Promise<ApiResponse<Record<string, any>[]> & { total?: number }>} - La réponse contenant les données récupérées.
    * @throws {ApiError} - Si la source n'est pas trouvée ou si une erreur se produit lors de la récupération des données.
    */
   async fetchData(
     sourceId: string,
     options: FetchOptions = {}
   ): Promise<ApiResponse<Record<string, any>[]> & { total?: number }> {
-    // 1. Vérification du partage
-    if (options.shareId) {
-      const shareCheck = await verifyShareAccess(sourceId, options.shareId)
-      if (shareCheck?.error) return shareCheck.error
-    }
-
-    // 2. Chargement de la source
-    const srcOrError = await getDataSourceOrError(sourceId)
-    if ("error" in srcOrError) return srcOrError.error
-    const source = srcOrError as IDataSource
-
-    // 3. Traitement direct Elasticsearch
-    if (
-      source.type === "elasticsearch" &&
-      source.endpoint &&
-      source.esIndex
-    ) {
-      try {
-        const res = await fetchElasticsearchData(source, {
-          from: options.from,
-          to: options.to,
-          page: options.page,
-          pageSize: options.pageSize,
-          fields: options.fields
-        })
-        return { data: res.data, total: res.total }
-      } catch (e: any) {
-        return toApiError(
-          e instanceof Error ? e.message : "Erreur récupération ES",
-          500
-        )
+    try {
+      // 1. Vérification du partage
+      if (options.shareId) {
+        const shareCheck = await verifyShareAccess(sourceId, options.shareId)
+        if (shareCheck?.error) return shareCheck.error
       }
+
+      // 2. Chargement de la source
+      const srcOrError = await getDataSourceOrError(sourceId)
+      if ("error" in srcOrError) return srcOrError.error
+      const source = srcOrError as IDataSource
+
+      // 3. Traitement direct Elasticsearch
+      if (
+        source.type === "elasticsearch" &&
+        source.endpoint &&
+        source.esIndex
+      ) {
+        try {
+          const res = await fetchElasticsearchData(source, {
+            from: options.from,
+            to: options.to,
+            page: options.page,
+            pageSize: options.pageSize,
+            fields: options.fields
+          })
+          const result = toApiSuccess(res.data, "Données récupérées avec succès")
+          if (res.total !== undefined) {
+            (result as any).total = res.total
+          }
+          return result
+        } catch (e: any) {
+          return toApiError(
+            e instanceof Error ? e.message : "Erreur récupération ES",
+            500
+          )
+        }
+      }
+
+      // 4. Préparation du cache (JSON/CSV)
+      const { hasTimestamp, from, to } = normalizeTimeWindow(source, options)
+      const { key: cacheKey, ttl } = computeCacheParams(
+        sourceId,
+        hasTimestamp,
+        from,
+        to
+      )
+
+      if (options.forceRefresh) {
+        sourceCache.del(cacheKey)
+        console.log(`[CACHE] Invalidation pour ${cacheKey}`)
+      }
+
+      // 5. Chargement des données (cache ou source)
+      const rows = await loadRows(source, cacheKey, ttl, from, to)
+
+      // 6. Filtrage des champs
+      const selected = selectFields(rows, options.fields)
+
+      // 7. Pagination
+      const paginatedResult = paginateRows(selected, options.page, options.pageSize)
+
+      const result = toApiSuccess(paginatedResult.data, "Données récupérées avec succès")
+      if (paginatedResult.total !== undefined) {
+        (result as any).total = paginatedResult.total
+      }
+      return result
+    } catch (e: any) {
+      return toApiError(
+        e instanceof Error ? e.message : "Erreur lors de la récupération des données",
+        500
+      )
     }
-
-    // 4. Préparation du cache (JSON/CSV)
-    const { hasTimestamp, from, to } = normalizeTimeWindow(source, options)
-    const { key: cacheKey, ttl } = computeCacheParams(
-      sourceId,
-      hasTimestamp,
-      from,
-      to
-    )
-
-    if (options.forceRefresh) {
-      sourceCache.del(cacheKey)
-      console.log(`[CACHE] Invalidation pour ${cacheKey}`)
-    }
-
-    // 5. Chargement des données (cache ou source)
-    const rows = await loadRows(source, cacheKey, ttl, from, to)
-
-    // 6. Filtrage des champs
-    const selected = selectFields(rows, options.fields)
-
-    // 7. Pagination
-    return paginateRows(selected, options.page, options.pageSize)
   }
 
 

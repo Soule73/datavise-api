@@ -20,6 +20,8 @@ build/
 # Environment variables
 .env
 .env.local
+.env.test
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local
@@ -58,3 +60,10 @@ logs
 
 # Optional eslint cache
 .eslintcache
+
+# Test coverage
+coverage/
+*.lcov
+
+# Jest
+# jest.config.js - Configuration needed for CI/CD

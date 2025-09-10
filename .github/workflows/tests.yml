@@ -1,0 +1,106 @@
+name: Tests Automatiques
+
+on:
+  # push:
+  #   branches: [ main, develop ]
+  # pull_request:
+  #   branches: [ main, develop ]
+
+  # Manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+    - name: Checkout du code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Installation des dépendances
+      run: npm ci
+
+    - name: Vérification du code (lint)
+      run: npm run lint
+      continue-on-error: true
+
+    - name: Compilation TypeScript
+      run: npm run build
+
+    - name: Exécution des tests
+      run: npm run test:routes
+      env:
+        NODE_ENV: test
+
+    - name: Upload couverture de code
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == '20.x'
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+
+  test-services:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout du code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+
+    - name: Installation des dépendances
+      run: npm ci
+
+    - name: Tests des Services
+      run: npm run test:services
+
+  test-routes:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout du code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+
+    - name: Installation des dépendances
+      run: npm ci
+
+    - name: Tests des Routes
+      run: npm run test:routes
+
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: [test-routes, test-services]
+    if: always()
+    
+    steps:
+    - name: Résumé des tests
+      run: |
+        echo "## Résumé des Tests" >> $GITHUB_STEP_SUMMARY
+        echo "| Module | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Routes | ${{ needs.test-routes.result == 'success' && '✅ Réussi' || '❌ Échec' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Services | ${{ needs.test-services.result == 'success' && '✅ Réussi' || '❌ Échec' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY

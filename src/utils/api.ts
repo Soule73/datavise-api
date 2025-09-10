@@ -1,4 +1,4 @@
-import { ApiData, ApiError, ApiResponse } from "../types/api";
+import { ApiData, ApiError, ApiResponse, ApiSuccess } from "../types/api";
 import { Response } from "express";
 
 /**
@@ -16,13 +16,29 @@ export function handleServiceResult<T>(
   result: ApiResponse<T>,
   successStatus: number = 200
 ): Response {
-  // if ("error" in result) {
-  //   return res.status(result.status || 400).json(result);
-  // }
+  if (!result.success) {
+    return res.status(result.status || 400).json(result);
+  }
   return res.status(successStatus).json(result);
 }
 
-/** * Convertit des données en format API.
+/**
+ * Convertit des données en format API de succès.
+ * @template T - Le type des données à convertir.
+ * @param {T} data - Les données à convertir.
+ * @param {string} [message] - Message de succès optionnel.
+ * @return {ApiSuccess<T>} - Les données converties au format API de succès.
+ */
+export function toApiSuccess<T>(data: T, message?: string): ApiSuccess<T> {
+  return {
+    success: true,
+    data: data,
+    ...(message && { message })
+  };
+}
+
+/**
+ * Convertit des données en format API (legacy).
  * @template T - Le type des données à convertir.
  * @param {T} data - Les données à convertir.
  * @return {ApiData<T>} - Les données converties au format API.
@@ -38,6 +54,11 @@ export function toApiData<T>(data: T): ApiData<T> {
  * @param {Record<string, string>} [errors] - Un objet d'erreurs clé/valeur.
  * @return {ApiError} - L'erreur convertie au format API.
  */
-export function toApiError<T>(message: string, status: number = 400, errors?: Record<string, string>): ApiError {
-  return { message: message, errors: errors || {}, status: status };
+export function toApiError(message: string, status: number = 400, errors?: Record<string, string>): ApiError {
+  return {
+    success: false,
+    message: message,
+    errors: errors || {},
+    status: status
+  };
 }

@@ -139,4 +139,25 @@ export default {
 
     return handleServiceResult(res, users);
   },
+
+  /**
+   * Récupération du profil de l'utilisateur authentifié.
+   * @param {Request} req - La requête HTTP avec l'utilisateur authentifié.
+   * @param {Response} res - La réponse HTTP.
+   * @returns {Promise<Response>} - La réponse HTTP avec le profil de l'utilisateur.
+   */
+  async getProfile(req: Request, res: Response): Promise<Response> {
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Utilisateur non authentifié"
+      });
+    }
+
+    const result = await userService.getProfile(userId);
+
+    return handleServiceResult(res, result);
+  },
 };

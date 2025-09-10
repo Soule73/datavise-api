@@ -25,7 +25,6 @@ connectDB();
 app.use(express.json());
 
 // CORS configuration
-
 app.use(cors());
 
 // Routes

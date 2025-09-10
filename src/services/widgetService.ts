@@ -6,7 +6,7 @@ import type {
   WidgetUpdatePayload,
 } from "../types/widgetType";
 import type { ApiResponse } from "../types/api";
-import { toApiData, toApiError } from "../utils/api";
+import { toApiSuccess, toApiError } from "../utils/api";
 import { generateUUID } from "../utils/uuidGenerator";
 
 /**
@@ -47,7 +47,7 @@ const widgetService = {
       ],
     });
 
-    return toApiData(widget);
+    return toApiSuccess(widget);
   },
 
 
@@ -72,7 +72,7 @@ const widgetService = {
       })
     );
 
-    return toApiData(widgetsWithUsage);
+    return toApiSuccess(widgetsWithUsage);
   },
 
 
@@ -88,7 +88,7 @@ const widgetService = {
       return toApiError("Widget non trouvé.", 404);
     }
 
-    return toApiData(widget);
+    return toApiSuccess(widget);
   },
 
 
@@ -140,7 +140,7 @@ const widgetService = {
 
     await widget.save();
 
-    return toApiData(widget);
+    return toApiSuccess(widget);
   },
 
 
@@ -148,9 +148,9 @@ const widgetService = {
    * Supprime un widget par son ID.
    * Vérifie d'abord s'il est utilisé dans un dashboard.
    * @param {string} id - L'ID du widget à supprimer.
-   * @returns {Promise<ApiResponse<{ success: boolean }>>} - La réponse indiquant si la suppression a réussi.
+   * @returns {Promise<ApiResponse<string>>} - La réponse indiquant si la suppression a réussi.
    */
-  async remove(id: string): Promise<ApiResponse<{ success: boolean }>> {
+  async remove(id: string): Promise<ApiResponse<string>> {
     const widget = await Widget.findById(id);
 
     if (!widget) {
@@ -170,7 +170,7 @@ const widgetService = {
 
     await Widget.findByIdAndDelete(id);
 
-    return toApiData({ success: true });
+    return toApiSuccess("Widget supprimé avec succès.");
   },
 
 

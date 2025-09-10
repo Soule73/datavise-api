@@ -9,7 +9,7 @@ import type { ApiResponse } from "../types/api";
 import { cleanTimeRange } from "../utils/dataSourceUtils";
 import DataSource from "../models/DataSource";
 import { IDataSource } from "../types/sourceType";
-import { toApiData, toApiError } from "../utils/api";
+import { toApiSuccess, toApiError } from "../utils/api";
 import { generateUUID } from "../utils/uuidGenerator";
 
 /**
@@ -40,7 +40,7 @@ const dashboardService = {
       timeRange,
     });
 
-    return toApiData(dashboard);
+    return toApiSuccess(dashboard);
   },
 
   /**
@@ -73,7 +73,7 @@ const dashboardService = {
 
     dashboardObj.layout = hydratedLayout;
 
-    return toApiData(dashboardObj);
+    return toApiSuccess(dashboardObj);
   },
 
   /**
@@ -104,7 +104,7 @@ const dashboardService = {
       return toApiError("Dashboard non trouvé.", 404);
     }
 
-    return toApiData(updated);
+    return toApiSuccess(updated);
   },
 
   /**
@@ -119,7 +119,7 @@ const dashboardService = {
       return toApiError("Dashboard non trouvé.", 404);
     }
 
-    return toApiData({ message: "Dashboard supprimé." });
+    return toApiSuccess({ message: "Dashboard supprimé." });
   },
 
   /**
@@ -132,7 +132,7 @@ const dashboardService = {
       $or: [{ ownerId: userId }, { visibility: "public" }],
     });
 
-    return toApiData(dashboards);
+    return toApiSuccess(dashboards);
   },
 
   /**
@@ -159,7 +159,7 @@ const dashboardService = {
       return toApiError("Erreur lors de l'activation du partage.", 500);
     }
 
-    return toApiData({ shareId: updated.shareId as string });
+    return toApiSuccess({ shareId: updated.shareId as string });
   },
 
   /**
@@ -179,7 +179,7 @@ const dashboardService = {
       return toApiError("Dashboard non trouvé.", 404);
     }
 
-    return toApiData({ success: true });
+    return toApiSuccess({ success: true });
   },
 
   async getSharedDashboard(shareId: string): Promise<ApiResponse<IDashboard>> {
@@ -206,7 +206,7 @@ const dashboardService = {
 
     dashboardObj.layout = hydratedLayout;
 
-    return toApiData(dashboardObj);
+    return toApiSuccess(dashboardObj);
   },
 
   /**
@@ -237,7 +237,7 @@ const dashboardService = {
       _id: { $in: dataSourceIds },
     }).lean()) as IDataSource[];
 
-    return toApiData(sources);
+    return toApiSuccess(sources);
   },
 };
 
