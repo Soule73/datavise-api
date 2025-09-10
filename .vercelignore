@@ -21,11 +21,6 @@ docs/
 jest.config.js
 nodemon.json
 
-# Fichiers TypeScript sources (on garde les .js compilés)
-src/
-tsconfig.json
-tsconfig.*.json
-
 # Linting et formatting
 .eslintrc.*
 .prettierrc.*
