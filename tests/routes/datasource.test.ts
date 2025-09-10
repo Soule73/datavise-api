@@ -87,7 +87,7 @@ describe('DataSource Routes', () => {
             expect(response.status).toBe(401);
         });
 
-        it.skip('should return 400 with invalid data', async () => {
+        it('should return 400 with invalid data', async () => {
             const datasourceData = {
                 // missing name
                 type: 'csv'
@@ -100,6 +100,7 @@ describe('DataSource Routes', () => {
 
             expect(response.status).toBe(400);
             expect(response.body.success).toBe(false);
+            expect(response.body.message).toBe('Erreur de validation');
         });
     });
 

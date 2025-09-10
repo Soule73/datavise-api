@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  setup:
     runs-on: ubuntu-latest
     
     strategy:
@@ -37,11 +37,6 @@ jobs:
     - name: Compilation TypeScript
       run: npm run build
 
-    - name: Exécution des tests
-      run: npm run test:routes
-      env:
-        NODE_ENV: test
-
     - name: Upload couverture de code
       uses: codecov/codecov-action@v3
       if: matrix.node-version == '20.x'
@@ -52,7 +47,7 @@ jobs:
 
   test-services:
     runs-on: ubuntu-latest
-    needs: test
+    needs: setup
     
     steps:
     - name: Checkout du code
@@ -69,10 +64,12 @@ jobs:
 
     - name: Tests des Services
       run: npm run test:services
+      env:
+        NODE_ENV: test
 
   test-routes:
     runs-on: ubuntu-latest
-    needs: test
+    needs: setup
     
     steps:
     - name: Checkout du code
@@ -89,6 +86,8 @@ jobs:
 
     - name: Tests des Routes
       run: npm run test:routes
+      env:
+        NODE_ENV: test
 
   test-summary:
     runs-on: ubuntu-latest

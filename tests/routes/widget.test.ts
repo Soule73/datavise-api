@@ -123,7 +123,7 @@ describe('Widget Routes', () => {
             expect(response.status).toBe(401);
         });
 
-        it.skip('should return 400 with invalid data', async () => {
+        it('should return 400 with invalid data', async () => {
             const widgetData = {
                 // missing title
                 type: 'chart'
@@ -136,6 +136,7 @@ describe('Widget Routes', () => {
 
             expect(response.status).toBe(400);
             expect(response.body.success).toBe(false);
+            expect(response.body.message).toBe('Champs requis manquants.');
         });
     });
 

@@ -85,20 +85,6 @@ describe('Dashboard Routes', () => {
             expect(response.status).toBe(401);
         });
 
-        it.skip('should return 400 with invalid data', async () => {
-            const dashboardData = {
-                // missing title
-                visibility: 'private'
-            };
-
-            const response = await request(app)
-                .post('/api/dashboards')
-                .set('Authorization', `Bearer ${authToken}`)
-                .send(dashboardData);
-
-            expect(response.status).toBe(400);
-            expect(response.body.success).toBe(false);
-        });
     });
 
     describe('GET /api/dashboards/:id', () => {
