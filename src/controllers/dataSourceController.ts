@@ -230,15 +230,42 @@ const dataSourceController = {
    * Envoie un fichier d'exemple de données de ventes.
    * @param {Request} req - La requête HTTP.
    * @param {Response} res - La réponse HTTP.
-   * @returns {Promise<void>} - Envoie le fichier JSON d'exemple.
+   * @returns {Promise<Response | void>} - Envoie le fichier JSON d'exemple.
    *
    * NOTE: cette méthode peur étre supprimée si elle n'est pas utilisée.
    * Elle est utilisée pour fournir un exemple de données de ventes.
    */
-  async demoVentes(req: Request, res: Response): Promise<void> {
-    res.sendFile(
-      path.resolve(__dirname, "../data/ventes-exemple.json")
-    );
+  async demoVentes(req: Request, res: Response): Promise<Response | void> {
+    try {
+      const filePath = path.resolve(__dirname, "../data/ventes-exemple.json");
+
+      // Vérifier si le fichier existe
+      if (!fs.existsSync(filePath)) {
+        res.status(404).json({
+          success: false,
+          message: "Fichier de démonstration non trouvé"
+        });
+        return;
+      }
+
+      // Lire et parser le fichier JSON
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const ventesData = JSON.parse(fileContent);
+
+      // Renvoyer les données JSON avec les en-têtes appropriés
+      res.setHeader('Content-Type', 'application/json');
+      res.json({
+        success: true,
+        data: ventesData,
+        message: "Données de démonstration des ventes"
+      });
+    } catch (error) {
+      console.error('Erreur lors de la lecture du fichier de démonstration:', error);
+      res.status(500).json({
+        success: false,
+        message: "Erreur lors de la récupération des données de démonstration"
+      });
+    }
   },
 };
 
