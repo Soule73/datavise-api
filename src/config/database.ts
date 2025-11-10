@@ -1,32 +1,27 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import chalk from 'chalk';
+import { initPermissionsAndRoles } from '../data/initPermissions';
 
 dotenv.config();
 
 const connectDB = async () => {
     try {
+        const environment = process.env.NODE_ENV || 'development';
         const conn = await mongoose.connect(process.env.MONGODB_URI as string, {
             dbName: process.env.MONGO_DB_NAME || "data-vise",
         });
 
-        // Get database name from connection string or use default
         const dbName = conn.connection.name || 'default';
 
-        console.log('\n' + chalk.bold('📦 MongoDB Status'));
-        console.log(chalk.dim('──────────────'));
-        console.log(`${chalk.green('✓')} ${chalk.bold('Status')}: ${chalk.green('Connected')}`);
-        console.log(`${chalk.blue('🏢')} ${chalk.bold('Host')}: ${chalk.cyan(conn.connection.host)}`);
-        console.log(`${chalk.yellow('📂')} ${chalk.bold('Database')}: ${chalk.cyan(dbName)}`);
-        console.log(`${chalk.magenta('🔌')} ${chalk.bold('Port')}: ${chalk.cyan(conn.connection.port || '27017')}`);
-        console.log(chalk.dim('──────────────\n'));
+        console.log(`Connected to MongoDB successfully, Host: ${conn.connection.host}, Database: ${dbName}, Port: ${conn.connection.port || '27017'}, Environment: ${environment}`);
+
+        if (environment === 'development') {
+            initPermissionsAndRoles().then(() => {
+                console.log('Permissions and roles initialized.');
+            });
+        }
     } catch (error) {
-        console.log('\n' + chalk.bold('📦 MongoDB Status'));
-        console.log(chalk.dim('──────────────'));
-        console.log(`${chalk.red('✗')} ${chalk.bold('Status')}: ${chalk.red('Failed to Connect')}`);
-        console.log(`${chalk.red('❌')} ${chalk.bold('Error')}: ${chalk.red(error instanceof Error ? error.message : 'Unknown error')}`);
-        console.log(chalk.dim('──────────────\n'));
-        process.exit(1);
+        console.error(`Failed to connect to MongoDB: ${error}`);
     }
 };
 
