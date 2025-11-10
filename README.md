@@ -2,7 +2,7 @@
 
 Une API REST moderne pour la visualisation et la gestion de données, construite avec Node.js, Express et TypeScript.
 
-## 🌟 Fonctionnalités
+## Fonctionnalités
 
 - **Authentification sécurisée** avec JWT
 - **Gestion des utilisateurs et rôles** avec système de permissions
@@ -12,7 +12,7 @@ Une API REST moderne pour la visualisation et la gestion de données, construite
 - **Cache intelligent** pour optimiser les performances
 - **Déploiement cloud** prêt (Vercel)
 
-## 🚀 Technologies
+## Technologies
 
 - **Backend**: Node.js, Express.js, TypeScript
 - **Base de données**: MongoDB avec Mongoose
@@ -23,13 +23,13 @@ Une API REST moderne pour la visualisation et la gestion de données, construite
 - **Intégration**: Elasticsearch
 - **Déploiement**: Vercel
 
-## 📋 Prérequis
+## Prérequis
 
 - Node.js >= 18.x
 - MongoDB (local ou Atlas)
 - npm ou yarn
 
-## ⚙️ Installation
+## Installation
 
 1. **Cloner le repository**
 ```bash
@@ -71,7 +71,7 @@ ELASTICSEARCH_URL=http://localhost:9200
 npm run build
 ```
 
-## 🏃‍♂️ Démarrage
+## Démarrage
 
 ### Développement
 ```bash
@@ -85,7 +85,7 @@ npm run start:prod
 
 L'API sera accessible à l'adresse : `http://localhost:3000`
 
-## 📁 Structure du projet
+## Structure du projet
 
 ```
 src/
@@ -130,7 +130,7 @@ src/
 - `POST /api/uploads` - Upload d'un fichier CSV/JSON
 - `GET /api/uploads/:filename` - Télécharger un fichier
 
-## 🔒 Système d'authentification
+## Système d'authentification
 
 L'API utilise JWT pour l'authentification. Incluez le token dans l'en-tête Authorization :
 
@@ -138,7 +138,7 @@ L'API utilise JWT pour l'authentification. Incluez le token dans l'en-tête Auth
 Authorization: Bearer votre_token_jwt
 ```
 
-## 🎯 Déploiement
+## Déploiement
 
 ### Vercel (Recommandé)
 
@@ -160,7 +160,7 @@ Configurez les variables d'environnement dans le dashboard Vercel :
 - `JWT_EXPIRATION`
 - `CORS_ORIGIN`
 
-## 🧪 Scripts disponibles
+## Scripts disponibles
 
 - `npm start` - Démarre le serveur en mode développement
 - `npm run build` - Compile TypeScript vers JavaScript
@@ -180,7 +180,7 @@ const userSchema = z.object({
 });
 ```
 
-## 🔍 Gestion des erreurs
+## Gestion des erreurs
 
 L'API retourne des erreurs au format JSON standardisé :
 
@@ -192,7 +192,7 @@ L'API retourne des erreurs au format JSON standardisé :
 }
 ```
 
-## 🤝 Contribution
+## Contribution
 
 1. Forkez le projet
 2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
@@ -200,18 +200,18 @@ L'API retourne des erreurs au format JSON standardisé :
 4. Pushez sur la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrez une Pull Request
 
-## 📄 Licence
+## Licence
 
 Ce projet est sous licence ISC. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
-## 🔗 Liens utiles
+## Liens utiles
 
 - [Documentation MongoDB](https://docs.mongodb.com/)
 - [Documentation Express.js](https://expressjs.com/)
 - [Documentation TypeScript](https://www.typescriptlang.org/)
 - [Documentation Vercel](https://vercel.com/docs)
 
-## 📞 Support
+## Support
 
 Pour toute question ou problème, n'hésitez pas à ouvrir une issue sur GitHub.
 
