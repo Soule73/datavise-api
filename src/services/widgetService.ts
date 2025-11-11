@@ -23,7 +23,7 @@ const widgetService = {
    * @returns {Promise<ApiResponse<IWidget>>} - La réponse contenant le widget créé.
    */
   async create(payload: WidgetCreatePayload): Promise<ApiResponse<IWidget>> {
-    const { title, type, dataSourceId, config, userId } = payload;
+    const { title, type, dataSourceId, config, userId, isGeneratedByAI, description, reasoning, confidence } = payload;
 
     if (!title || !type || !dataSourceId || !userId) {
       return toApiError("Champs requis manquants.", 400);
@@ -37,6 +37,10 @@ const widgetService = {
       dataSourceId,
       config,
       ownerId: userId,
+      isGeneratedByAI: isGeneratedByAI || false,
+      description,
+      reasoning,
+      confidence,
       history: [
         {
           userId,
@@ -119,6 +123,10 @@ const widgetService = {
       "dataSourceId",
       "config",
       "visibility",
+      "isGeneratedByAI",
+      "description",
+      "reasoning",
+      "confidence",
     ] as const) {
       if (body[key] !== undefined && body[key] !== old[key]) {
         changes[key] = { before: old[key], after: body[key] };

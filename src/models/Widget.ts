@@ -33,6 +33,12 @@ const WidgetSchema = new Schema<IWidget>(
       default: "private",
     },
     history: { type: [WidgetHistoryItemSchema], default: [] },
+
+    // Champs pour les widgets générés par l'IA
+    isGeneratedByAI: { type: Boolean, default: false },
+    description: { type: String },
+    reasoning: { type: String },
+    confidence: { type: Number, min: 0, max: 1 },
   },
   { timestamps: true }
 );

@@ -11,6 +11,7 @@ import dataSourceRoutes from "./routes/datasource";
 import widgetRoutes from "./routes/widget";
 import dashboardRoutes from "./routes/dashboard";
 import uploadsRoutes from "./routes/uploads";
+import aiRoutes from "./routes/ai";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -75,6 +76,8 @@ app.use("/api/widgets", widgetRoutes);
 app.use("/api/dashboards", dashboardRoutes);
 
 app.use("/api/uploads", uploadsRoutes);
+
+app.use("/api/ai", aiRoutes);
 
 
 console.log(process.env);
