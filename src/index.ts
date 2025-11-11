@@ -12,6 +12,7 @@ import widgetRoutes from "./routes/widget";
 import dashboardRoutes from "./routes/dashboard";
 import uploadsRoutes from "./routes/uploads";
 import aiRoutes from "./routes/ai";
+import aiConversationRoutes from "./routes/aiConversation";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -79,7 +80,7 @@ app.use("/api/uploads", uploadsRoutes);
 
 app.use("/api/ai", aiRoutes);
 
+app.use("/api/ai-conversations", aiConversationRoutes);
 
-console.log(process.env);
 // Start server with banner
 startServer(app, port);

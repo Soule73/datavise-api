@@ -87,4 +87,26 @@ router.get(
   widgetController.getById
 );
 
+/**
+ * GET /widgets/conversation/:conversationId
+ * Récupère tous les widgets d'une conversation (drafts inclus)
+ */
+router.get(
+  "/conversation/:conversationId",
+  requireAuth,
+  requirePermission("widget:canView"),
+  widgetController.getByConversation
+);
+
+/**
+ * PATCH /widgets/:id/publish
+ * Publie un widget draft (isDraft: false)
+ */
+router.patch(
+  "/:id/publish",
+  requireAuth,
+  requirePermission("widget:canUpdate"),
+  widgetController.publishWidget
+);
+
 export default router;

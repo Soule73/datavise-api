@@ -181,6 +181,53 @@ const widgetService = {
     return toApiSuccess("Widget supprimé avec succès.");
   },
 
+  /**
+   * Récupère tous les widgets d'une conversation
+   */
+  async getByConversation(
+    conversationId: string,
+    userId?: string
+  ): Promise<ApiResponse<IWidget[]>> {
+    const widgets = await Widget.find({
+      conversationId,
+      ownerId: userId,
+    }).sort({ createdAt: 1 });
+
+    return toApiSuccess(widgets);
+  },
+
+  /**
+   * Publie un widget draft (change isDraft à false)
+   */
+  async publishWidget(
+    id: string,
+    userId?: string
+  ): Promise<ApiResponse<IWidget>> {
+    const widget = await Widget.findById(id);
+
+    if (!widget) {
+      return toApiError("Widget non trouvé.", 404);
+    }
+
+    if (widget.ownerId.toString() !== userId) {
+      return toApiError("Non autorisé.", 403);
+    }
+
+    widget.isDraft = false;
+
+    if (widget.history) {
+      widget.history.push({
+        userId: widget.ownerId,
+        date: new Date(),
+        action: "update",
+        changes: { isDraft: { before: true, after: false } },
+      });
+    }
+
+    await widget.save();
+
+    return toApiSuccess(widget);
+  },
 
 };
 

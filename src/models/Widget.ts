@@ -36,6 +36,8 @@ const WidgetSchema = new Schema<IWidget>(
 
     // Champs pour les widgets générés par l'IA
     isGeneratedByAI: { type: Boolean, default: false },
+    conversationId: { type: Schema.Types.ObjectId, ref: "AIConversation" },
+    isDraft: { type: Boolean, default: false },
     description: { type: String },
     reasoning: { type: String },
     confidence: { type: Number, min: 0, max: 1 },

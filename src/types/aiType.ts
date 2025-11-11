@@ -3,6 +3,8 @@
  */
 export interface AIGenerateRequest {
     dataSourceId: string;
+    userId: string;
+    conversationId: string;
     userPrompt?: string;
     maxWidgets?: number;
     preferredTypes?: string[];
@@ -12,7 +14,8 @@ export interface AIGenerateRequest {
  * Widget généré par l'IA avec métadonnées
  */
 export interface AIGeneratedWidget {
-    id: string; // ID temporaire pour le frontend
+    id: string; // widgetId unique
+    _id?: string; // MongoDB ObjectId (présent après sauvegarde)
     name: string;
     description: string;
     type: string;
@@ -26,6 +29,7 @@ export interface AIGeneratedWidget {
  * Réponse de génération de widgets par IA
  */
 export interface AIGenerateResponse {
+    conversationTitle?: string; // Titre généré par l'IA pour la conversation
     widgets: AIGeneratedWidget[];
     totalGenerated: number;
     dataSourceSummary: {

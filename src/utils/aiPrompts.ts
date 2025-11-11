@@ -170,6 +170,7 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
 
 Réponds UNIQUEMENT en JSON:
 {
+  "conversationTitle": "Titre court et descriptif de la conversation (max 50 caractères, ex: 'Analyse des ventes par région')",
   "widgets": [
     {
       "name": "Titre explicite du widget",

@@ -91,6 +91,30 @@ const widgetController = {
 
     return handleServiceResult(res, result);
   },
+
+  /**
+   * Récupère tous les widgets d'une conversation
+   */
+  async getByConversation(req: Request, res: Response, next: NextFunction) {
+    const { conversationId } = req.params;
+    const userId = (req as AuthRequest).user?.id;
+
+    const result = await widgetService.getByConversation(conversationId, userId);
+
+    return handleServiceResult(res, result);
+  },
+
+  /**
+   * Publie un widget draft (isDraft: false)
+   */
+  async publishWidget(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const userId = (req as AuthRequest).user?.id;
+
+    const result = await widgetService.publishWidget(id, userId);
+
+    return handleServiceResult(res, result);
+  },
 };
 
 export default widgetController;

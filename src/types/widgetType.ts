@@ -19,6 +19,8 @@ export interface IWidget extends Document {
 
   // Champs pour les widgets générés par l'IA
   isGeneratedByAI?: boolean;
+  conversationId?: mongoose.Types.ObjectId;
+  isDraft?: boolean;
   description?: string;
   reasoning?: string;
   confidence?: number;
@@ -35,6 +37,8 @@ export interface WidgetBasePayload {
 
   // Champs pour les widgets générés par l'IA
   isGeneratedByAI?: boolean;
+  conversationId?: mongoose.Types.ObjectId;
+  isDraft?: boolean;
   description?: string;
   reasoning?: string;
   confidence?: number;

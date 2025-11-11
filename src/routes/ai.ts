@@ -19,21 +19,35 @@ router.post(
     requireAuth,
     requirePermission("widget:canCreate"),
     async (req: AuthRequest, res: Response) => {
-        const request: AIGenerateRequest = req.body;
+        const requestBody: Omit<AIGenerateRequest, 'userId' | 'conversationId'> = req.body;
 
         console.log("📥 [AI Route] POST /api/ai/generate-widgets", {
             userId: req.user?.id,
-            dataSourceId: request.dataSourceId,
-            hasPrompt: !!request.userPrompt,
-            maxWidgets: request.maxWidgets,
+            dataSourceId: requestBody.dataSourceId,
+            conversationId: req.body.conversationId,
+            hasPrompt: !!requestBody.userPrompt,
+            maxWidgets: requestBody.maxWidgets,
         });
 
-        if (!request.dataSourceId) {
+        if (!requestBody.dataSourceId) {
             console.error("❌ [AI Route] dataSourceId manquant");
             return res
                 .status(400)
                 .json({ success: false, message: "dataSourceId requis" });
         }
+
+        if (!req.body.conversationId) {
+            console.error("❌ [AI Route] conversationId manquant");
+            return res
+                .status(400)
+                .json({ success: false, message: "conversationId requis" });
+        }
+
+        const request: AIGenerateRequest = {
+            ...requestBody,
+            userId: req.user!.id,
+            conversationId: req.body.conversationId,
+        };
 
         const result = await aiWidgetService.generateWidgets(request);
 
@@ -81,6 +95,48 @@ router.post(
         );
 
         console.log("📤 [AI Route] Réponse /refine-widgets:", {
+            success: result.success,
+            widgetsCount: result.success ? result.data.widgets.length : 0,
+            hasError: !result.success,
+        });
+
+        return handleServiceResult(res, result, 200);
+    }
+);
+
+/**
+ * POST /api/ai/refine-widgets-db
+ * Raffine des widgets sauvegardés dans MongoDB
+ */
+router.post(
+    "/refine-widgets-db",
+    requireAuth,
+    requirePermission("widget:canUpdate"),
+    async (req: AuthRequest, res: Response) => {
+        const { dataSourceId, widgetIds, refinementPrompt } = req.body;
+
+        console.log("📥 [AI Route] POST /api/ai/refine-widgets-db", {
+            userId: req.user?.id,
+            dataSourceId,
+            widgetIdsCount: widgetIds?.length,
+            prompt: refinementPrompt?.substring(0, 100),
+        });
+
+        if (!dataSourceId || !widgetIds || !refinementPrompt) {
+            console.error("❌ [AI Route] Paramètres manquants pour raffinement DB");
+            return res.status(400).json({
+                success: false,
+                message: "dataSourceId, widgetIds et refinementPrompt requis",
+            });
+        }
+
+        const result = await aiWidgetService.refineWidgetsInDatabase(
+            dataSourceId,
+            widgetIds,
+            refinementPrompt
+        );
+
+        console.log("📤 [AI Route] Réponse /refine-widgets-db:", {
             success: result.success,
             widgetsCount: result.success ? result.data.widgets.length : 0,
             hasError: !result.success,

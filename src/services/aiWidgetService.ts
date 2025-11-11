@@ -7,6 +7,8 @@ import type {
 import type { ApiResponse } from "../types/api";
 import { toApiSuccess, toApiError } from "../utils/api";
 import DataSource from "../models/DataSource";
+import Widget from "../models/Widget";
+import mongoose from "mongoose";
 import { readCsvFile } from "../utils/cvsUtils";
 import { fetchRemoteJson } from "../utils/jsonUtils";
 import {
@@ -178,9 +180,42 @@ const aiWidgetService = {
 
             AIServiceLogger.success("Transformation terminée:", widgets.length);
 
+            // Créer les widgets en base de données avec isDraft: true
+            const createdWidgets = await Promise.all(
+                widgets.map(async (widget) => {
+                    const widgetDoc = new Widget({
+                        widgetId: widget.id,
+                        title: widget.name,
+                        type: widget.type,
+                        dataSourceId: new mongoose.Types.ObjectId(request.dataSourceId),
+                        config: widget.config,
+                        ownerId: new mongoose.Types.ObjectId(request.userId),
+                        visibility: "private",
+                        isGeneratedByAI: true,
+                        conversationId: new mongoose.Types.ObjectId(request.conversationId),
+                        isDraft: true,
+                        description: widget.description,
+                        reasoning: widget.reasoning,
+                        confidence: widget.confidence,
+                    });
+
+                    const saved = await widgetDoc.save();
+                    AIServiceLogger.info("Widget créé en draft:", { id: saved._id, widgetId: saved.widgetId });
+
+                    // Retourner le widget avec l'_id MongoDB
+                    return {
+                        ...widget,
+                        _id: saved._id.toString(),
+                    };
+                })
+            );
+
+            AIServiceLogger.success(`${createdWidgets.length} widgets créés en base comme drafts`);
+
             return toApiSuccess({
-                widgets,
-                totalGenerated: widgets.length,
+                conversationTitle: aiResponse.conversationTitle || `Analyse ${source.name}`,
+                widgets: createdWidgets,
+                totalGenerated: createdWidgets.length,
                 dataSourceSummary: {
                     name: source.name,
                     type: source.type,
@@ -255,6 +290,123 @@ Améliore les widgets selon les instructions. Garde le format exact.`;
             AIServiceLogger.error("Erreur raffinement:", error.message);
             return toApiError(
                 error.message || "Erreur lors du raffinement",
+                500
+            );
+        }
+    },
+
+    /**
+     * Raffine des widgets sauvegardés dans MongoDB
+     * Récupère les widgets par IDs, envoie à l'IA, met à jour dans MongoDB
+     */
+    async refineWidgetsInDatabase(
+        dataSourceId: string,
+        widgetIds: string[],
+        refinementPrompt: string
+    ): Promise<ApiResponse<any>> {
+        AIServiceLogger.info("Raffinement des widgets MongoDB:", {
+            widgetIds,
+            refinementPrompt,
+        });
+
+        try {
+            if (!validateOpenAIKey()) {
+                return toApiError("Clé API OpenAI non configurée", 500);
+            }
+
+            // 1. Récupérer les widgets complets depuis MongoDB
+            const Widget = (await import("../models/Widget")).default;
+            const widgets = await Widget.find({ _id: { $in: widgetIds } }).lean();
+
+            if (widgets.length === 0) {
+                return toApiError("Aucun widget trouvé avec ces IDs", 404);
+            }
+
+            AIServiceLogger.info(`${widgets.length} widgets récupérés depuis MongoDB`);
+
+            // 2. Analyser la source de données
+            const analysis = await aiWidgetService.analyzeDataSource(dataSourceId);
+            const source = await DataSource.findById(dataSourceId);
+
+            if (!source) {
+                return toApiError("Source introuvable", 404);
+            }
+
+            // 3. Préparer le prompt pour l'IA
+            const widgetsForPrompt = widgets.map((w) => ({
+                id: w._id.toString(),
+                name: w.title,
+                type: w.type,
+                config: w.config,
+                description: w.description,
+            }));
+
+            const userPrompt = `Source: ${source.name}
+Colonnes numériques: ${analysis.numericColumns.join(", ")}
+Colonnes catégorielles: ${analysis.categoricalColumns.join(", ")}
+
+Widgets actuels (déjà sauvegardés dans la base de données):
+${JSON.stringify(widgetsForPrompt, null, 2)}
+
+Instructions de raffinement: ${refinementPrompt}
+
+IMPORTANT: Retourne les widgets avec leurs IDs existants pour que je puisse les mettre à jour.
+Améliore les configurations selon les instructions. Garde le format exact.`;
+
+            // 4. Appeler l'IA
+            const aiResponse = await callOpenAI({
+                systemPrompt: WIDGET_REFINEMENT_SYSTEM_PROMPT,
+                userPrompt,
+            });
+
+            const refinedWidgets = transformAIResponseToWidgets(
+                aiResponse,
+                dataSourceId
+            );
+
+            AIServiceLogger.info(`${refinedWidgets.length} widgets raffinés par l'IA`);
+
+            // 5. Mettre à jour les widgets dans MongoDB
+            const updatePromises = refinedWidgets.map(async (refined, index) => {
+                const originalWidget = widgets[index];
+                if (!originalWidget) return null;
+
+                const updated = await Widget.findByIdAndUpdate(
+                    originalWidget._id,
+                    {
+                        config: refined.config,
+                        description: refined.description || originalWidget.description,
+                        updatedAt: new Date(),
+                    },
+                    { new: true }
+                );
+
+                AIServiceLogger.info(`Widget ${originalWidget._id} mis à jour`);
+                return updated;
+            });
+
+            const updatedWidgets = await Promise.all(updatePromises);
+            const validUpdates = updatedWidgets.filter((w) => w !== null);
+
+            AIServiceLogger.success(
+                `${validUpdates.length} widgets mis à jour dans MongoDB`
+            );
+
+            return toApiSuccess({
+                widgets: validUpdates,
+                totalUpdated: validUpdates.length,
+                dataSourceSummary: {
+                    name: source.name,
+                    type: source.type,
+                    rowCount: analysis.rowCount,
+                    columns: analysis.columns.map((c) => c.name),
+                },
+                suggestions: extractSuggestions(aiResponse),
+            });
+        } catch (error: any) {
+            AIServiceLogger.error("Erreur raffinement MongoDB:", error.message);
+            return toApiError(
+                error.message || "Erreur lors du raffinement des widgets",
                 500
             );
         }
