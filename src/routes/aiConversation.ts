@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { requireAuth, type AuthRequest } from "../middleware/auth";
 import aiConversationService from "../services/aiConversationService";
 import { handleServiceResult } from "../utils/api";
+import { isValidObjectId } from "../utils/validation";
 
 const router = Router();
 
@@ -65,6 +66,13 @@ router.get("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
         userId: req.user?.id,
         conversationId: id,
     });
+
+    if (!isValidObjectId(id)) {
+        return res.status(400).json({
+            success: false,
+            message: "ID de conversation invalide",
+        });
+    }
 
     const result = await aiConversationService.getConversationById(
         id,

@@ -29,16 +29,22 @@ export interface AIGeneratedWidget {
  * Réponse de génération de widgets par IA
  */
 export interface AIGenerateResponse {
-    conversationTitle?: string; // Titre généré par l'IA pour la conversation
+    conversationTitle?: string;
+    aiMessage?: string;
     widgets: AIGeneratedWidget[];
     totalGenerated: number;
     dataSourceSummary: {
         name: string;
         type: string;
         rowCount: number;
-        columns: string[];
+        columns: Array<{
+            name: string;
+            type: string;
+            uniqueValues?: number;
+            sampleValues?: any[];
+        }>;
     };
-    suggestions?: string[]; // Suggestions supplémentaires
+    suggestions?: string[];
 }
 
 /**

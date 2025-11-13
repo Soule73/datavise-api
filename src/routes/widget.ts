@@ -2,6 +2,7 @@ import express from "express";
 import { requirePermission } from "../middleware/requirePermission";
 import { requireAuth } from "../middleware/auth";
 import widgetController from "../controllers/widgetController";
+import { isValidObjectId } from "../utils/validation";
 
 const router = express.Router();
 
@@ -95,6 +96,16 @@ router.get(
   "/conversation/:conversationId",
   requireAuth,
   requirePermission("widget:canView"),
+  (req, res, next) => {
+    const { conversationId } = req.params;
+    if (!isValidObjectId(conversationId)) {
+      return res.status(400).json({
+        success: false,
+        message: "ID de conversation invalide",
+      });
+    }
+    next();
+  },
   widgetController.getByConversation
 );
 

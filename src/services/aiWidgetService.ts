@@ -8,6 +8,7 @@ import type { ApiResponse } from "../types/api";
 import { toApiSuccess, toApiError } from "../utils/api";
 import DataSource from "../models/DataSource";
 import Widget from "../models/Widget";
+import AIConversation from "../models/AIConversation";
 import mongoose from "mongoose";
 import { readCsvFile } from "../utils/cvsUtils";
 import { fetchRemoteJson } from "../utils/jsonUtils";
@@ -20,6 +21,11 @@ import {
     formatAnalysisForPrompt,
     validateOpenAIKey,
 } from "../utils/aiServiceUtils";
+import {
+    PromptService,
+    DataSourceSummaryBuilder,
+    ValidationService
+} from "../utils/aiServiceHelpers";
 import {
     WIDGET_GENERATION_SYSTEM_PROMPT,
     WIDGET_REFINEMENT_SYSTEM_PROMPT,
@@ -212,17 +218,40 @@ const aiWidgetService = {
 
             AIServiceLogger.success(`${createdWidgets.length} widgets créés en base comme drafts`);
 
+            const dataSourceSummary = DataSourceSummaryBuilder.build(source, analysis);
+            const suggestions = extractSuggestions(aiResponse);
+            const aiMessage = aiResponse.aiMessage || `J'ai généré ${createdWidgets.length} visualisation${createdWidgets.length > 1 ? 's' : ''} pour analyser vos données.`;
+
+            if (request.conversationId) {
+                try {
+                    await AIConversation.findByIdAndUpdate(
+                        request.conversationId,
+                        {
+                            dataSourceSummary,
+                            suggestions,
+                            $push: {
+                                messages: {
+                                    role: "assistant",
+                                    content: aiMessage,
+                                    timestamp: new Date(),
+                                    widgetsGenerated: createdWidgets.length
+                                }
+                            }
+                        }
+                    );
+                    AIServiceLogger.success("Métadonnées et message IA sauvegardés dans la conversation");
+                } catch (convError) {
+                    AIServiceLogger.error("Erreur sauvegarde métadonnées conversation:", convError);
+                }
+            }
+
             return toApiSuccess({
                 conversationTitle: aiResponse.conversationTitle || `Analyse ${source.name}`,
+                aiMessage,
                 widgets: createdWidgets,
                 totalGenerated: createdWidgets.length,
-                dataSourceSummary: {
-                    name: source.name,
-                    type: source.type,
-                    rowCount: analysis.rowCount,
-                    columns: analysis.columns.map((c) => c.name),
-                },
-                suggestions: extractSuggestions(aiResponse),
+                dataSourceSummary,
+                suggestions,
             });
         } catch (error: any) {
             AIServiceLogger.error("Erreur:", error.message);
@@ -253,20 +282,18 @@ const aiWidgetService = {
             const analysis = await aiWidgetService.analyzeDataSource(dataSourceId);
             const source = await DataSource.findById(dataSourceId);
 
-            if (!source) {
-                return toApiError("Source introuvable", 404);
+            const sourceValidation = ValidationService.validateSource(source);
+            if (!sourceValidation.valid) {
+                return toApiError(sourceValidation.error!, 404);
             }
 
-            const userPrompt = `Source: ${source.name}
-Colonnes numériques: ${analysis.numericColumns.join(", ")}
-Colonnes catégorielles: ${analysis.categoricalColumns.join(", ")}
-
-Widgets actuels:
-${JSON.stringify(currentWidgets, null, 2)}
-
-Instructions de raffinement: ${refinementPrompt}
-
-Améliore les widgets selon les instructions. Garde le format exact.`;
+            const userPrompt = PromptService.createRefinementPrompt(
+                source!.name,
+                source!.type,
+                analysis,
+                currentWidgets,
+                refinementPrompt
+            );
 
             const aiResponse = await callOpenAI({
                 systemPrompt: WIDGET_REFINEMENT_SYSTEM_PROMPT,
@@ -274,16 +301,14 @@ Améliore les widgets selon les instructions. Garde le format exact.`;
             });
 
             const widgets = transformAIResponseToWidgets(aiResponse, dataSourceId);
+            const dataSourceSummary = DataSourceSummaryBuilder.build(source!, analysis);
+            const aiMessage = aiResponse.aiMessage || "J'ai appliqué les modifications demandées à vos widgets.";
 
             return toApiSuccess({
+                aiMessage,
                 widgets,
                 totalGenerated: widgets.length,
-                dataSourceSummary: {
-                    name: source.name,
-                    type: source.type,
-                    rowCount: analysis.rowCount,
-                    columns: analysis.columns.map((c) => c.name),
-                },
+                dataSourceSummary,
                 suggestions: extractSuggestions(aiResponse),
             });
         } catch (error: any) {
@@ -318,21 +343,21 @@ Améliore les widgets selon les instructions. Garde le format exact.`;
             const Widget = (await import("../models/Widget")).default;
             const widgets = await Widget.find({ _id: { $in: widgetIds } }).lean();
 
-            if (widgets.length === 0) {
-                return toApiError("Aucun widget trouvé avec ces IDs", 404);
+            const widgetsValidation = ValidationService.validateWidgets(widgets);
+            if (!widgetsValidation.valid) {
+                return toApiError(widgetsValidation.error!, 404);
             }
 
             AIServiceLogger.info(`${widgets.length} widgets récupérés depuis MongoDB`);
 
-            // 2. Analyser la source de données
             const analysis = await aiWidgetService.analyzeDataSource(dataSourceId);
             const source = await DataSource.findById(dataSourceId);
 
-            if (!source) {
-                return toApiError("Source introuvable", 404);
+            const sourceValidation = ValidationService.validateSource(source);
+            if (!sourceValidation.valid) {
+                return toApiError(sourceValidation.error!, 404);
             }
 
-            // 3. Préparer le prompt pour l'IA
             const widgetsForPrompt = widgets.map((w) => ({
                 id: w._id.toString(),
                 name: w.title,
@@ -341,19 +366,13 @@ Améliore les widgets selon les instructions. Garde le format exact.`;
                 description: w.description,
             }));
 
-            const userPrompt = `Source: ${source.name}
-Colonnes numériques: ${analysis.numericColumns.join(", ")}
-Colonnes catégorielles: ${analysis.categoricalColumns.join(", ")}
-
-Widgets actuels (déjà sauvegardés dans la base de données):
-${JSON.stringify(widgetsForPrompt, null, 2)}
-
-Instructions de raffinement: ${refinementPrompt}
-
-IMPORTANT: Retourne les widgets avec leurs IDs existants pour que je puisse les mettre à jour.
-Améliore les configurations selon les instructions. Garde le format exact.`;
-
-            // 4. Appeler l'IA
+            const userPrompt = PromptService.createDatabaseRefinementPrompt(
+                source!.name,
+                source!.type,
+                analysis,
+                widgetsForPrompt,
+                refinementPrompt
+            );
             const aiResponse = await callOpenAI({
                 systemPrompt: WIDGET_REFINEMENT_SYSTEM_PROMPT,
                 userPrompt,
@@ -392,15 +411,12 @@ Améliore les configurations selon les instructions. Garde le format exact.`;
                 `${validUpdates.length} widgets mis à jour dans MongoDB`
             );
 
+            const dataSourceSummary = DataSourceSummaryBuilder.build(source!, analysis);
+
             return toApiSuccess({
                 widgets: validUpdates,
                 totalUpdated: validUpdates.length,
-                dataSourceSummary: {
-                    name: source.name,
-                    type: source.type,
-                    rowCount: analysis.rowCount,
-                    columns: analysis.columns.map((c) => c.name),
-                },
+                dataSourceSummary,
                 suggestions: extractSuggestions(aiResponse),
             });
         } catch (error: any) {

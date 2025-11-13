@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { DataAnalysis } from "../types/aiType";
+import { PromptStrategyFactory } from "./promptStrategies";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const AI_MODEL = process.env.AI_MODEL || "gpt-4o-mini";
@@ -150,6 +151,7 @@ export async function callOpenAI(config: OpenAIConfig): Promise<any> {
 
 /**
  * Formate l'analyse de données pour le prompt utilisateur
+ * Utilise le pattern Strategy pour construire le prompt
  */
 export function formatAnalysisForPrompt(
     sourceName: string,
@@ -158,23 +160,16 @@ export function formatAnalysisForPrompt(
     userPrompt?: string,
     maxWidgets: number = 5
 ): string {
-    return `═══════════════════════════════════════════════════════════════
-📊 DONNÉES À ANALYSER
-═══════════════════════════════════════════════════════════════
 
-Source: ${sourceName}
-Type: ${sourceType}
-Lignes: ${analysis.rowCount}
+    const strategy = PromptStrategyFactory.createGenerationStrategy(
+        sourceName,
+        sourceType,
+        analysis,
+        userPrompt,
+        maxWidgets
+    );
 
-COLONNES NUMÉRIQUES: ${analysis.numericColumns.join(", ") || "Aucune"}
-COLONNES CATÉGORIELLES: ${analysis.categoricalColumns.join(", ") || "Aucune"}
-COLONNES DE DATES: ${analysis.dateColumns.join(", ") || "Aucune"}
-
-${userPrompt ? `\nINSTRUCTIONS: ${userPrompt}\n` : ""}
-
-Génère ${maxWidgets} widgets pertinents et variés.
-Utilise les colonnes disponibles ci-dessus.
-RESPECT STRICT du format des exemples.`;
+    return strategy.build();
 }
 
 /**

@@ -7,11 +7,23 @@ export interface IAIMessage {
     widgetsGenerated?: number;
 }
 
+export interface IDataSourceSummary {
+    totalRows: number;
+    columns: Array<{
+        name: string;
+        type: string;
+        uniqueValues?: number;
+        sampleValues?: any[];
+    }>;
+}
+
 export interface IAIConversation extends Document {
     userId: Types.ObjectId;
     dataSourceId: Types.ObjectId;
     title: string;
     messages: IAIMessage[];
+    dataSourceSummary?: IDataSourceSummary;
+    suggestions?: string[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -60,6 +72,14 @@ const AIConversationSchema = new Schema<IAIConversation>(
         },
         messages: {
             type: [AIMessageSchema],
+            default: [],
+        },
+        dataSourceSummary: {
+            type: Schema.Types.Mixed,
+            required: false,
+        },
+        suggestions: {
+            type: [String],
             default: [],
         },
     },
