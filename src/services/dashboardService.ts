@@ -4,6 +4,7 @@ import type {
   IDashboard,
   DashboardCreatePayload,
   DashboardUpdatePayload,
+  DashboardBasePayload,
 } from "../types/dashboardType";
 import type { ApiResponse } from "../types/api";
 import { cleanTimeRange } from "../utils/dataSourceUtils";
@@ -22,18 +23,19 @@ const dashboardService = {
   /**
    * Crée un nouveau dashboard pour l'utilisateur spécifié.
    * @param {string} userId - L'ID de l'utilisateur propriétaire du dashboard.
-   * @param {DashboardCreatePayload} data - Les données du dashboard à créer.
+   * @param {DashboardBasePayload} data - Les données du dashboard à créer.
    * @returns {Promise<ApiResponse<IDashboard>>} - La réponse contenant le dashboard créé.
    */
   async createDashboard(
     userId: string,
-    data: DashboardCreatePayload
+    data: DashboardBasePayload
   ): Promise<ApiResponse<IDashboard>> {
     const timeRange = cleanTimeRange(data.timeRange);
 
     const dashboard = await Dashboard.create({
       ...data,
       userId,
+      ownerId: userId,
       visibility: data.visibility ?? "private",
       autoRefreshIntervalValue: data.autoRefreshIntervalValue,
       autoRefreshIntervalUnit: data.autoRefreshIntervalUnit,
@@ -46,9 +48,10 @@ const dashboardService = {
   /**
    * Récupère un dashboard par son ID, avec les widgets hydratés.
    * @param {string} id - L'ID du dashboard à récupérer.
+   * @param {string} userId - L'ID de l'utilisateur (optionnel pour vérification)
    * @returns {Promise<ApiResponse<IDashboard>>} - La réponse contenant le dashboard avec son layout et ses widgets.
    */
-  async getDashboardById(id: string): Promise<ApiResponse<IDashboard>> {
+  async getDashboardById(id: string, userId?: string): Promise<ApiResponse<IDashboard>> {
     const dashboard = await Dashboard.findById(id);
 
     if (!dashboard) {
@@ -80,11 +83,13 @@ const dashboardService = {
    * Met à jour un dashboard existant.
    * @param {string} id - L'ID du dashboard à mettre à jour.
    * @param {DashboardUpdatePayload} data - Les données de mise à jour du dashboard.
+   * @param {string} userId - L'ID de l'utilisateur (optionnel pour vérification)
    * @returns {Promise<ApiResponse<IDashboard>>} - La réponse contenant le dashboard mis à jour.
    */
   async updateDashboard(
     id: string,
-    data: DashboardUpdatePayload
+    data: DashboardUpdatePayload,
+    userId?: string
   ): Promise<ApiResponse<IDashboard>> {
     const timeRange = cleanTimeRange(data.timeRange);
 
@@ -110,9 +115,10 @@ const dashboardService = {
   /**
    * Supprime un dashboard par son ID.
    * @param {string} id - L'ID du dashboard à supprimer.
+   * @param {string} userId - L'ID de l'utilisateur (optionnel pour vérification)
    * @returns {Promise<ApiResponse<{ message: string }>>} - La réponse indiquant le succès de la suppression.
    */
-  async deleteDashboard(id: string): Promise<ApiResponse<{ message: string }>> {
+  async deleteDashboard(id: string, userId?: string): Promise<ApiResponse<{ message: string }>> {
     const dashboard = await Dashboard.findByIdAndDelete(id);
 
     if (!dashboard) {
@@ -138,11 +144,13 @@ const dashboardService = {
   /**
    * Active le partage public pour un dashboard.
    * @param {string} dashboardId - L'ID du dashboard à partager.
-   * @returns {Promise<ApiResponse<{ shareId: string }>>} - La réponse contenant l'ID de partage généré.
+   * @param {string} userId - L'ID de l'utilisateur (optionnel pour vérification)
+   * @returns {Promise<ApiResponse<IDashboard>>} - La réponse contenant le dashboard mis à jour.
    */
   async enableShare(
-    dashboardId: string
-  ): Promise<ApiResponse<{ shareId: string }>> {
+    dashboardId: string,
+    userId?: string
+  ): Promise<ApiResponse<IDashboard>> {
     const shareId = generateUUID(true, 8, true, "share-");
 
     const updated = await Dashboard.findByIdAndUpdate(
@@ -159,17 +167,19 @@ const dashboardService = {
       return toApiError("Erreur lors de l'activation du partage.", 500);
     }
 
-    return toApiSuccess({ shareId: updated.shareId as string });
+    return toApiSuccess(updated);
   },
 
   /**
    * Désactive le partage public pour un dashboard.
    * @param {string} dashboardId - L'ID du dashboard dont on veut désactiver le partage.
-   * @returns {Promise<ApiResponse<{ success: boolean }>>} - La réponse indiquant le succès de l'opération.
+   * @param {string} userId - L'ID de l'utilisateur (optionnel pour vérification)
+   * @returns {Promise<ApiResponse<IDashboard>>} - La réponse contenant le dashboard mis à jour.
    */
   async disableShare(
-    dashboardId: string
-  ): Promise<ApiResponse<{ success: boolean }>> {
+    dashboardId: string,
+    userId?: string
+  ): Promise<ApiResponse<IDashboard>> {
     const updated = await Dashboard.findByIdAndUpdate(
       dashboardId,
       { shareEnabled: false, shareId: null },
@@ -179,7 +189,7 @@ const dashboardService = {
       return toApiError("Dashboard non trouvé.", 404);
     }
 
-    return toApiSuccess({ success: true });
+    return toApiSuccess(updated);
   },
 
   async getSharedDashboard(shareId: string): Promise<ApiResponse<IDashboard>> {
