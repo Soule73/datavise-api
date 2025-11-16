@@ -11,18 +11,18 @@ export interface AIGenerateRequest {
 }
 
 /**
- * Widget généré par l'IA avec métadonnées
+ * Widget généré par l'IA (utilise le modèle Widget existant)
  */
-export interface AIGeneratedWidget {
-    id: string; // widgetId unique
-    _id?: string; // MongoDB ObjectId (présent après sauvegarde)
+export interface WidgetAIResponse {
+    id: string;
+    _id?: string;
     name: string;
-    description: string;
+    description?: string;
     type: string;
-    config: Record<string, any>; // Configuration du widget
+    config: Record<string, any>;
     dataSourceId: string;
-    reasoning: string; // Pourquoi l'IA a choisi ce widget
-    confidence: number; // Score de confiance (0-1)
+    reasoning?: string;
+    confidence?: number;
 }
 
 /**
@@ -31,7 +31,7 @@ export interface AIGeneratedWidget {
 export interface AIGenerateResponse {
     conversationTitle?: string;
     aiMessage?: string;
-    widgets: AIGeneratedWidget[];
+    widgets: WidgetAIResponse[];
     totalGenerated: number;
     dataSourceSummary: {
         name: string;
@@ -52,7 +52,7 @@ export interface AIGenerateResponse {
  */
 export interface AIRefineRequest {
     dataSourceId: string;
-    currentWidgets: AIGeneratedWidget[];
+    currentWidgets: WidgetAIResponse[];
     refinementPrompt: string;
 }
 

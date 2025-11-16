@@ -1,5 +1,5 @@
 import { generateUUID } from "./uuidGenerator";
-import type { AIGeneratedWidget } from "../types/aiType";
+import type { WidgetAIResponse } from "../types/aiType";
 
 /**
  * Transforme la réponse brute de l'IA en widgets typés
@@ -7,7 +7,7 @@ import type { AIGeneratedWidget } from "../types/aiType";
 export function transformAIResponseToWidgets(
     aiResponse: any,
     dataSourceId: string
-): AIGeneratedWidget[] {
+): WidgetAIResponse[] {
     if (!aiResponse.widgets || !Array.isArray(aiResponse.widgets)) {
         console.error("❌ [Transformer] Réponse AI invalide:", JSON.stringify(aiResponse, null, 2));
         throw new Error("Réponse AI invalide: widgets manquants");

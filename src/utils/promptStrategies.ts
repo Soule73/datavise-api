@@ -1,4 +1,4 @@
-import type { DataAnalysis, AIGeneratedWidget } from "../types/aiType";
+import type { DataAnalysis, WidgetAIResponse } from "../types/aiType";
 import {
     PromptBuilder,
     ColumnFormatter,
@@ -75,7 +75,7 @@ export class RefinementPromptStrategy implements PromptStrategy {
         private sourceName: string,
         private sourceType: string,
         private analysis: DataAnalysis,
-        private currentWidgets: AIGeneratedWidget[],
+        private currentWidgets: WidgetAIResponse[],
         private refinementPrompt: string
     ) {
         this.builder = new PromptBuilder();
@@ -190,7 +190,7 @@ export class PromptStrategyFactory {
         sourceName: string,
         sourceType: string,
         analysis: DataAnalysis,
-        currentWidgets: AIGeneratedWidget[],
+        currentWidgets: WidgetAIResponse[],
         refinementPrompt: string
     ): PromptStrategy {
         return new RefinementPromptStrategy(

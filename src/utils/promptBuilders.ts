@@ -1,5 +1,4 @@
-import type { DataAnalysis } from "../types/aiType";
-import type { AIGeneratedWidget } from "../types/aiType";
+import type { DataAnalysis, WidgetAIResponse } from "../types/aiType";
 
 interface ColumnSection {
     title: string;
@@ -100,7 +99,7 @@ export class DataSourceInfoFormatter {
  * Formate les widgets pour l'affichage dans les prompts
  */
 export class WidgetFormatter {
-    static formatWidget(widget: AIGeneratedWidget, index: number): string {
+    static formatWidget(widget: WidgetAIResponse, index: number): string {
         return `
 **Widget ${index + 1}: ${widget.name}**
 Type: ${widget.type}
@@ -124,7 +123,7 @@ Configuration actuelle:
 ${JSON.stringify(widget.config, null, 2)}`;
     }
 
-    static formatAllWidgets(widgets: AIGeneratedWidget[]): string {
+    static formatAllWidgets(widgets: WidgetAIResponse[]): string {
         return widgets.map((widget, index) => this.formatWidget(widget, index)).join('\n');
     }
 

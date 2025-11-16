@@ -1,7 +1,7 @@
 import type {
     AIGenerateRequest,
     AIGenerateResponse,
-    AIGeneratedWidget,
+    WidgetAIResponse,
     DataAnalysis,
 } from "../types/aiType";
 import type { ApiResponse } from "../types/api";
@@ -269,7 +269,7 @@ const aiWidgetService = {
      */
     async refineWidgets(
         dataSourceId: string,
-        currentWidgets: AIGeneratedWidget[],
+        currentWidgets: WidgetAIResponse[],
         refinementPrompt: string
     ): Promise<ApiResponse<AIGenerateResponse>> {
         AIServiceLogger.info("Raffinement des widgets");
