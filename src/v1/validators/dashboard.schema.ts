@@ -8,14 +8,20 @@ import { paginationQuerySchema, idParamSchema } from "./common.schema";
 export { idParamSchema };
 
 /**
- * Schéma pour un élément de layout
+ * Schéma pour un élément de layout (react-grid-layout format)
  */
 const layoutItemSchema = z.object({
+    i: z.string().min(1),
     widgetId: z.string().min(1),
-    width: z.string().min(1),
-    height: z.number().int().positive(),
     x: z.number().int().min(0),
     y: z.number().int().min(0),
+    w: z.number().int().positive(),
+    h: z.number().int().positive(),
+    minW: z.number().int().positive().optional(),
+    minH: z.number().int().positive().optional(),
+    maxW: z.number().int().positive().optional(),
+    maxH: z.number().int().positive().optional(),
+    static: z.boolean().optional(),
 });
 
 /**

@@ -5,11 +5,17 @@ const { Schema } = mongoose;
 
 const DashboardLayoutItemSchema = new Schema(
   {
+    i: { type: String, required: true },
     widgetId: { type: String, required: true },
-    width: { type: String, required: true },
-    height: { type: Number, required: true },
     x: { type: Number, required: true },
     y: { type: Number, required: true },
+    w: { type: Number, required: true },
+    h: { type: Number, required: true },
+    minW: { type: Number },
+    minH: { type: Number },
+    maxW: { type: Number },
+    maxH: { type: Number },
+    static: { type: Boolean },
   },
   { _id: false }
 );

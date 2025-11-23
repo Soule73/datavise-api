@@ -70,16 +70,18 @@ describe("Dashboards v1 Routes", () => {
                 title: "Dashboard avec widgets",
                 layout: [
                     {
+                        i: "widget_123",
                         widgetId: "widget_123",
-                        width: "6",
-                        height: 4,
+                        w: 6,
+                        h: 4,
                         x: 0,
                         y: 0,
                     },
                     {
+                        i: "widget_456",
                         widgetId: "widget_456",
-                        width: "6",
-                        height: 4,
+                        w: 6,
+                        h: 4,
                         x: 6,
                         y: 0,
                     },
@@ -244,9 +246,10 @@ describe("Dashboards v1 Routes", () => {
 
             const newLayout = [
                 {
+                    i: "widget_789",
                     widgetId: "widget_789",
-                    width: "12",
-                    height: 6,
+                    w: 12,
+                    h: 6,
                     x: 0,
                     y: 0,
                 },
@@ -433,9 +436,10 @@ describe("Dashboards v1 Routes", () => {
                     title: "Dashboard with Sources",
                     layout: [
                         {
+                            i: widget.widgetId,
                             widgetId: widget.widgetId,
-                            width: "6",
-                            height: 4,
+                            w: 6,
+                            h: 4,
                             x: 0,
                             y: 0,
                         },

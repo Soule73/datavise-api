@@ -63,12 +63,12 @@ export const listDataSourcesQuerySchema = paginationQuerySchema.extend({
 export const fetchDataQuerySchema = z.object({
     from: z.string().optional(),
     to: z.string().optional(),
-    page: z.coerce.number().int().min(1).default(1),
-    pageSize: z.coerce.number().int().min(1).max(1000).default(100),
+    page: z.coerce.number().int().min(1).optional().default(1),
+    pageSize: z.coerce.number().int().min(1).max(10000).optional().default(100),
     fields: z.string().optional(),
-    forceRefresh: z.coerce.boolean().default(false),
+    forceRefresh: z.coerce.boolean().optional().default(false),
     shareId: z.string().optional(),
-}).strict();
+}).passthrough();
 
 export const detectColumnsSchema = z.object({
     type: z.enum(["json", "csv", "elasticsearch"]),

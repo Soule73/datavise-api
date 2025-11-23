@@ -59,10 +59,8 @@ const dashboardService = {
     }
 
     const widgetIds = dashboard.layout.map((item: any) => item.widgetId);
-
-    const widgets = await Widget.find({ widgetId: { $in: widgetIds } }).lean();
-
-    const widgetMap = Object.fromEntries(widgets.map((w) => [w.widgetId, w]));
+    const widgets = await Widget.find({ _id: { $in: widgetIds } }).lean();
+    const widgetMap = Object.fromEntries(widgets.map((w) => [String(w._id), w]));
 
     const hydratedLayout = dashboard.layout.map((item: any) => {
       const plainItem = item.toObject ? item.toObject() : { ...item };
@@ -73,8 +71,8 @@ const dashboardService = {
     });
 
     const dashboardObj = dashboard.toObject();
-
     dashboardObj.layout = hydratedLayout;
+    dashboardObj.widgets = widgets as any[];
 
     return toApiSuccess(dashboardObj);
   },
@@ -200,9 +198,9 @@ const dashboardService = {
 
     const widgetIds = dashboard.layout.map((item: any) => item.widgetId);
 
-    const widgets = await Widget.find({ widgetId: { $in: widgetIds } }).lean();
+    const widgets = await Widget.find({ _id: { $in: widgetIds } }).lean();
 
-    const widgetMap = Object.fromEntries(widgets.map((w) => [w.widgetId, w]));
+    const widgetMap = Object.fromEntries(widgets.map((w) => [String(w._id), w]));
 
     const hydratedLayout = dashboard.layout.map((item: any) => {
       const plainItem = item.toObject ? item.toObject() : { ...item };
@@ -215,6 +213,7 @@ const dashboardService = {
     const dashboardObj = dashboard.toObject();
 
     dashboardObj.layout = hydratedLayout;
+    dashboardObj.widgets = widgets as any[];
 
     return toApiSuccess(dashboardObj);
   },
