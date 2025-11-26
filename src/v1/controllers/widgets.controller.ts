@@ -123,29 +123,23 @@ export const listWidgets = async (req: AuthRequest, res: Response) => {
 
         let widgets = result.data;
 
-        console.log(query)
+        if (query.type) {
+            widgets = widgets.filter((w) => w.type === query.type);
+        }
+        if (query.visibility) {
+            widgets = widgets.filter((w) => w.visibility === query.visibility);
+        }
+        if (query.dataSourceId) {
+            widgets = widgets.filter(
+                (w) => w.dataSourceId.toString() === query.dataSourceId
+            );
+        }
 
-
-
-        // if (query.type) {
-        //     widgets = widgets.filter((w) => w.type === query.type);
-        // }
-        // if (query.visibility) {
-        //     widgets = widgets.filter((w) => w.visibility === query.visibility);
-        // }
-        // if (query.dataSourceId) {
-        //     widgets = widgets.filter(
-        //         (w) => w.dataSourceId.toString() === query.dataSourceId
-        //     );
-        // }
-        // if (query.isDraft !== undefined) {
-        //     widgets = widgets.filter((w) => w.isDraft === query.isDraft);
-        // }
-        // if (query.isGeneratedByAI !== undefined) {
-        //     widgets = widgets.filter(
-        //         (w) => w.isGeneratedByAI === query.isGeneratedByAI
-        //     );
-        // }
+        if (query.isGeneratedByAI !== undefined) {
+            widgets = widgets.filter(
+                (w) => w.isGeneratedByAI === query.isGeneratedByAI
+            );
+        }
 
         const total = widgets.length;
         const { page, limit, skip } = pagination || {

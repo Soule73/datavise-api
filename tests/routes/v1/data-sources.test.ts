@@ -9,7 +9,6 @@ import { initPermissionsAndRoles } from "../../../src/data/initPermissions";
 import { createTestUser, generateTestToken } from "../../helpers/testHelpers";
 import DataSource from "../../../src/models/DataSource";
 import Widget from "../../../src/models/Widget";
-import path from "path";
 
 const app: Express = express();
 app.use(express.json());
@@ -293,8 +292,6 @@ describe("Data Sources v1 Routes", () => {
                 .patch(`/api/v1/data-sources/${sourceId}`)
                 .set("Authorization", `Bearer ${authToken}`)
                 .send({ name: "Updated Name" });
-
-            console.log("PATCH Response:", res.status, res.body);
 
             expect(res.status).toBe(200);
             expect(res.body.data.name).toBe("Updated Name");

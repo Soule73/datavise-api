@@ -87,12 +87,10 @@ export const listWidgetsQuerySchema = z.object({
     dataSourceId: mongoIdSchema.optional(),
     isDraft: z
         .string()
-        .optional()
-        .transform((val) => val === "true"),
+        .optional(),
     isGeneratedByAI: z
         .string()
-        .optional()
-        .transform((val) => val === "true"),
+        .optional(),
     page: z
         .string()
         .optional()

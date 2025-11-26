@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import { paginationQuerySchema, idParamSchema } from "./common.schema";
+import { idParamSchema } from "./common.schema";
 
 export { idParamSchema };
 

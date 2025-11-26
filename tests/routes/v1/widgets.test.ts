@@ -313,10 +313,6 @@ describe("V1 Widgets Routes", () => {
                 .set("Authorization", `Bearer ${authToken}`)
                 .send(updatePayload);
 
-            if (response.status !== 200) {
-                console.log("Error response:", response.body);
-            }
-
             expect(response.status).toBe(200);
             expect(response.body.success).toBe(true);
             expect(response.body.data.title).toBe(updatePayload.title);

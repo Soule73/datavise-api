@@ -1,13 +1,9 @@
 import { Router } from "express";
 import { requireAuth } from "../../../middleware/auth";
 import { requirePermission } from "../../../middleware/requirePermission";
-import { validateBody, validateParams } from "../../middlewares/validate.middleware";
+import { validateBody } from "../../middlewares/validate.middleware";
 import {
     generateWidgetsSchema,
-    refineWidgetsSchema,
-    refineWidgetsDbSchema,
-    analyzeSourceSchema,
-    idParamSchema,
 } from "../../validators/ai-generation.schema";
 import * as generationsController from "../../controllers/ai-generations.controller";
 

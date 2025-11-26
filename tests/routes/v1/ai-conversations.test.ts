@@ -170,8 +170,6 @@ describe("GET /api/v1/ai/conversations - Liste", () => {
             visibility: "private",
         });
 
-        const otherSourceId = (otherSource._id as mongoose.Types.ObjectId).toString();
-
         await AIConversation.create({
             userId: testUser.user._id,
             dataSourceId: otherSource._id,
