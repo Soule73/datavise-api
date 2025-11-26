@@ -78,6 +78,22 @@ export const listUsers = async (req: AuthRequest, res: Response) => {
     );
 };
 
+export const getUserById = async (req: AuthRequest, res: Response) => {
+    const { id } = req.params;
+
+    const result = await userService.getProfile(id);
+
+    if (result.success) {
+        return res.status(200).json(
+            ApiResponseBuilder.success(result.data, result.message)
+        );
+    }
+
+    return res.status(result.status || 404).json(
+        ApiResponseBuilder.error(result.message, undefined, result.status)
+    );
+};
+
 export const updateUser = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
 

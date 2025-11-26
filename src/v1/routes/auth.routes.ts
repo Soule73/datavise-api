@@ -176,6 +176,33 @@ router.get(
 /**
  * @openapi
  * /api/v1/auth/users/{id}:
+ *   get:
+ *     summary: Récupérer un utilisateur par ID
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Utilisateur trouvé
+ *       404:
+ *         description: Utilisateur introuvable
+ */
+router.get(
+    "/users/:id",
+    requireAuth,
+    requirePermission("user:canView"),
+    validateParams(idParamSchema),
+    authController.getUserById
+);
+
+/**
+ * @openapi
+ * /api/v1/auth/users/{id}:
  *   put:
  *     summary: Mettre à jour un utilisateur
  *     tags: [Users]

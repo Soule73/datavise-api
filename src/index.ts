@@ -8,13 +8,7 @@ import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 
-import authRoutes from "./routes/auth";
-import dataSourceRoutes from "./routes/datasource";
-import widgetRoutes from "./routes/widget";
-import dashboardRoutes from "./routes/dashboard";
-import uploadsRoutes from "./routes/uploads";
-import aiRoutes from "./routes/ai";
-import aiConversationRoutes from "./routes/aiConversation";
+
 import v1Routes from "./v1/routes/index";
 
 // Load environment variables from .env file
@@ -87,20 +81,6 @@ app.get('/api-docs.json', (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
-
-app.use("/api/auth", authRoutes);
-
-app.use("/api/sources", dataSourceRoutes);
-
-app.use("/api/widgets", widgetRoutes);
-
-app.use("/api/dashboards", dashboardRoutes);
-
-app.use("/api/uploads", uploadsRoutes);
-
-app.use("/api/ai", aiRoutes);
-
-app.use("/api/ai-conversations", aiConversationRoutes);
 
 app.use("/api/v1", v1Routes);
 
