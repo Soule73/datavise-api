@@ -16,6 +16,14 @@ export interface IWidget extends Document {
   ownerId: mongoose.Types.ObjectId;
   visibility: "public" | "private";
   history?: WidgetHistoryItem[];
+
+  // Champs pour les widgets générés par l'IA
+  isGeneratedByAI?: boolean;
+  conversationId?: mongoose.Types.ObjectId;
+  isDraft?: boolean;
+  description?: string;
+  reasoning?: string;
+  confidence?: number;
 }
 
 export interface WidgetBasePayload {
@@ -26,6 +34,14 @@ export interface WidgetBasePayload {
   config?: Record<string, unknown>;
   visibility?: "public" | "private";
   userId?: mongoose.Types.ObjectId;
+
+  // Champs pour les widgets générés par l'IA
+  isGeneratedByAI?: boolean;
+  conversationId?: mongoose.Types.ObjectId;
+  isDraft?: boolean;
+  description?: string;
+  reasoning?: string;
+  confidence?: number;
 }
 
 export interface WidgetCreatePayload extends WidgetBasePayload {

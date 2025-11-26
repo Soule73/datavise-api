@@ -23,7 +23,7 @@ const widgetService = {
    * @returns {Promise<ApiResponse<IWidget>>} - La réponse contenant le widget créé.
    */
   async create(payload: WidgetCreatePayload): Promise<ApiResponse<IWidget>> {
-    const { title, type, dataSourceId, config, userId } = payload;
+    const { title, type, dataSourceId, config, userId, isGeneratedByAI, description, reasoning, confidence } = payload;
 
     if (!title || !type || !dataSourceId || !userId) {
       return toApiError("Champs requis manquants.", 400);
@@ -37,6 +37,10 @@ const widgetService = {
       dataSourceId,
       config,
       ownerId: userId,
+      isGeneratedByAI: isGeneratedByAI || false,
+      description,
+      reasoning,
+      confidence,
       history: [
         {
           userId,
@@ -61,6 +65,7 @@ const widgetService = {
     const widgets = await Widget.find({
       $or: [{ ownerId: userId }, { visibility: "public" }],
     });
+
 
     const widgetsWithUsage = await Promise.all(
       widgets.map(async (w) => {
@@ -119,6 +124,10 @@ const widgetService = {
       "dataSourceId",
       "config",
       "visibility",
+      "isGeneratedByAI",
+      "description",
+      "reasoning",
+      "confidence",
     ] as const) {
       if (body[key] !== undefined && body[key] !== old[key]) {
         changes[key] = { before: old[key], after: body[key] };
@@ -173,6 +182,53 @@ const widgetService = {
     return toApiSuccess("Widget supprimé avec succès.");
   },
 
+  /**
+   * Récupère tous les widgets d'une conversation
+   */
+  async getByConversation(
+    conversationId: string,
+    userId?: string
+  ): Promise<ApiResponse<IWidget[]>> {
+    const widgets = await Widget.find({
+      conversationId,
+      ownerId: userId,
+    }).sort({ createdAt: 1 });
+
+    return toApiSuccess(widgets);
+  },
+
+  /**
+   * Publie un widget draft (change isDraft à false)
+   */
+  async publishWidget(
+    id: string,
+    userId?: string
+  ): Promise<ApiResponse<IWidget>> {
+    const widget = await Widget.findById(id);
+
+    if (!widget) {
+      return toApiError("Widget non trouvé.", 404);
+    }
+
+    if (widget.ownerId.toString() !== userId) {
+      return toApiError("Non autorisé.", 403);
+    }
+
+    widget.isDraft = false;
+
+    if (widget.history) {
+      widget.history.push({
+        userId: widget.ownerId,
+        date: new Date(),
+        action: "update",
+        changes: { isDraft: { before: true, after: false } },
+      });
+    }
+
+    await widget.save();
+
+    return toApiSuccess(widget);
+  },
 
 };
 

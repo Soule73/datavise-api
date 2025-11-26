@@ -5,12 +5,11 @@ import connectDB from './config/database';
 import { startServer } from './utils/banner';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 
-import authRoutes from "./routes/auth";
-import dataSourceRoutes from "./routes/datasource";
-import widgetRoutes from "./routes/widget";
-import dashboardRoutes from "./routes/dashboard";
-import uploadsRoutes from "./routes/uploads";
+
+import v1Routes from "./v1/routes/index";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -66,17 +65,24 @@ app.get('/cors-test', (req: Request, res: Response) => {
   });
 });
 
-app.use("/api/auth", authRoutes);
+// Documentation Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: "DataVise API Documentation",
+  customCss: '.swagger-ui .topbar { display: none }',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    filter: true,
+  },
+}));
 
-app.use("/api/sources", dataSourceRoutes);
+// JSON de la spec OpenAPI
+app.get('/api-docs.json', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
-app.use("/api/widgets", widgetRoutes);
+app.use("/api/v1", v1Routes);
 
-app.use("/api/dashboards", dashboardRoutes);
-
-app.use("/api/uploads", uploadsRoutes);
-
-
-console.log(process.env);
 // Start server with banner
 startServer(app, port);

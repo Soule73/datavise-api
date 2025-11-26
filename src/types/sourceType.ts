@@ -40,7 +40,7 @@ export interface IDataSource extends Document, DataSourceBasePayload {
 export interface DataSourceCreatePayload extends DataSourceBasePayload {
   file?: File | null;
   filePath?: string;
-  ownerId?: mongoose.Types.ObjectId;
+  ownerId?: mongoose.Types.ObjectId | string;
 }
 
 export interface FetchOptions {

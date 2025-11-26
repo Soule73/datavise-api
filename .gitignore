@@ -64,6 +64,16 @@ logs
 # Test coverage
 coverage/
 *.lcov
+*.bak
+*.backup
 
 # Jest
 # jest.config.js - Configuration needed for CI/CD
+
+# ignore folders and files end with bak or backup
+*.bak
+*.backup
+**/*bak/*
+**/*backup/*
+
+docs/

@@ -2,11 +2,17 @@ import mongoose from "mongoose";
 import { IWidget } from "../types/widgetType";
 
 export interface DashboardLayoutItem {
+  i: string;
   widgetId: string;
-  width: string;
-  height: number;
   x: number;
   y: number;
+  w: number;
+  h: number;
+  minW?: number;
+  minH?: number;
+  maxW?: number;
+  maxH?: number;
+  static?: boolean;
   widget?: IWidget;
 }
 
@@ -28,6 +34,7 @@ export interface IDashboard extends mongoose.Document {
   history?: DashboardHistoryItem[];
   shareEnabled: boolean;
   shareId: string | null;
+  widgets?: IWidget[];
 }
 
 export interface DashboardBasePayload {

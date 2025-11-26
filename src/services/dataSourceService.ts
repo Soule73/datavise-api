@@ -130,32 +130,37 @@ const dataSourceService = {
       httpMethod,
       authType,
       authConfig,
+      visibility,
+      timestampField,
+      esIndex,
+      esQuery,
     } = payload;
-
-    // Validation des données avec Zod
-    const parseResult = dataSourceSchema.safeParse(payload);
-    if (!parseResult.success) {
-      const errorObj: Record<string, string> = buildErrorObject(parseResult.error.issues);
-      return toApiError("Erreur de validation", 400, errorObj);
-    }
 
     const oldSource = await DataSource.findById(id);
 
+    if (!oldSource) {
+      return toApiError("Source non trouvée", 404);
+    }
+
     const oldFilePath = oldSource?.filePath;
 
-    const source = await DataSource.findByIdAndUpdate(
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (type !== undefined) updateData.type = type;
+    if (endpoint !== undefined) updateData.endpoint = endpoint;
+    if (filePath !== undefined) updateData.filePath = filePath;
+    if (config !== undefined) updateData.config = config;
+    if (httpMethod !== undefined) updateData.httpMethod = httpMethod;
+    if (authType !== undefined) updateData.authType = authType;
+    if (authConfig !== undefined) updateData.authConfig = authConfig;
+    if (visibility !== undefined) updateData.visibility = visibility;
+    if (timestampField !== undefined) updateData.timestampField = timestampField;
+    if (esIndex !== undefined) updateData.esIndex = esIndex;
+    if (esQuery !== undefined) updateData.esQuery = esQuery;
 
+    const source = await DataSource.findByIdAndUpdate(
       id,
-      {
-        name,
-        type,
-        endpoint,
-        filePath,
-        config,
-        httpMethod,
-        authType,
-        authConfig,
-      },
+      updateData,
       { new: true }
     );
 
