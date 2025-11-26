@@ -69,3 +69,14 @@ coverage/
 
 # Jest
 # jest.config.js - Configuration needed for CI/CD
+
+# ignore folders and files end with bak or backup
+#files
+*.bak
+*.backup
+
+# folders
+**/*bak/*
+**/*backup/*
+
+docs/docs/
