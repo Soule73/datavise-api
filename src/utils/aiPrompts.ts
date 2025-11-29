@@ -20,7 +20,14 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
   "buckets": [],
   "globalFilters": [],
   "metricStyles": [{"color": "#6366f1", "label": "Ventes"}],
-  "widgetParams": {"icon": "💰", "prefix": "", "suffix": "€"}
+  "widgetParams": {
+    "title": "Total des ventes",
+    "valueColor": "#2563eb",
+    "titleColor": "#2563eb",
+    "showTrend": true,
+    "format": "number",
+    "decimals": 2
+  }
 }
 
 **CARD** - Carte
@@ -29,7 +36,17 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
   "buckets": [],
   "globalFilters": [],
   "metricStyles": [{"color": "#f59e42", "label": "Profit"}],
-  "widgetParams": {"description": "Performance"}
+  "widgetParams": {
+    "title": "Profit moyen",
+    "description": "Performance globale",
+    "valueColor": "#2563eb",
+    "iconColor": "#6366f1",
+    "showIcon": true,
+    "icon": "ChartBarIcon",
+    "format": "currency",
+    "decimals": 2,
+    "currency": "€"
+  }
 }
 
 **KPI_GROUP** - Groupe (2-6 indicateurs)
@@ -44,7 +61,14 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
     {"color": "#6366f1", "label": "Ventes"},
     {"color": "#f59e42", "label": "Profits"}
   ],
-  "widgetParams": {}
+  "widgetParams": {
+    "title": "Indicateurs de performance",
+    "columns": 2,
+    "showTrend": true,
+    "format": "number",
+    "decimals": 2,
+    "titleColor": "#2563eb"
+  }
 }
 
 **BAR** - Barres (comparaison catégories)
@@ -52,8 +76,26 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
   "metrics": [{"field": "sales", "agg": "sum", "label": "Ventes"}],
   "buckets": [{"field": "region", "type": "terms"}],
   "globalFilters": [],
-  "metricStyles": [{"color": "#6366f1", "label": "Ventes"}],
-  "widgetParams": {}
+  "metricStyles": [
+    {
+      "color": "#6366f1",
+      "label": "Ventes",
+      "borderColor": "#4f46e5",
+      "borderWidth": 1,
+      "borderRadius": 4
+    }
+  ],
+  "widgetParams": {
+    "title": "Ventes par région",
+    "legend": true,
+    "legendPosition": "top",
+    "showGrid": true,
+    "showValues": false,
+    "xLabel": "Région",
+    "yLabel": "Montant des ventes",
+    "stacked": false,
+    "horizontal": false
+  }
 }
 
 **LINE** - Ligne (tendance temporelle)
@@ -61,8 +103,27 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
   "metrics": [{"field": "sales", "agg": "sum", "label": "Ventes"}],
   "buckets": [{"field": "date", "type": "date_histogram"}],
   "globalFilters": [],
-  "metricStyles": [{"color": "#6366f1", "label": "Ventes"}],
-  "widgetParams": {}
+  "metricStyles": [
+    {
+      "color": "#6366f1",
+      "label": "Ventes",
+      "borderColor": "#4f46e5",
+      "borderWidth": 2,
+      "fill": false,
+      "pointStyle": "circle"
+    }
+  ],
+  "widgetParams": {
+    "title": "Évolution des ventes",
+    "legend": true,
+    "legendPosition": "top",
+    "showGrid": true,
+    "showPoints": true,
+    "xLabel": "Date",
+    "yLabel": "Montant des ventes",
+    "tension": 0.4,
+    "stacked": false
+  }
 }
 
 **PIE** - Camembert (proportions)
@@ -70,8 +131,20 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
   "metrics": [{"field": "sales", "agg": "sum", "label": "Ventes"}],
   "buckets": [{"field": "category", "type": "terms"}],
   "globalFilters": [],
-  "metricStyles": [{"color": "#6366f1", "label": "Ventes"}],
-  "widgetParams": {"cutout": "0%"}
+  "metricStyles": [
+    {
+      "colors": ["#6366f1", "#f59e42", "#10b981", "#ef4444", "#fbbf24"],
+      "borderColor": "#ffffff",
+      "borderWidth": 2
+    }
+  ],
+  "widgetParams": {
+    "title": "Répartition des ventes",
+    "legend": true,
+    "legendPosition": "right",
+    "cutout": "0%",
+    "labelFormat": "{label}: {value} ({percent}%)"
+  }
 }
 
 **RADAR** - Radar (multi-dimensions, 3+ champs)
@@ -84,8 +157,24 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
   }],
   "buckets": [{"field": "region", "type": "terms"}],
   "globalFilters": [],
-  "metricStyles": [{"color": "#6366f1", "label": "Performance"}],
-  "widgetParams": {}
+  "metricStyles": [
+    {
+      "color": "#6366f1",
+      "label": "Performance",
+      "borderColor": "#4f46e5",
+      "borderWidth": 2,
+      "opacity": 0.25,
+      "fill": true,
+      "pointStyle": "circle"
+    }
+  ],
+  "widgetParams": {
+    "title": "Analyse multi-critères",
+    "legend": true,
+    "legendPosition": "top",
+    "pointRadius": 4,
+    "pointHoverRadius": 6
+  }
 }
 
 **SCATTER** - Dispersion (2 variables)
@@ -99,8 +188,26 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
   }],
   "buckets": [],
   "globalFilters": [],
-  "metricStyles": [{"color": "#6366f1", "label": "Corrélation"}],
-  "widgetParams": {}
+  "metricStyles": [
+    {
+      "color": "#6366f1",
+      "label": "Corrélation",
+      "borderColor": "#4f46e5",
+      "borderWidth": 1,
+      "opacity": 0.7,
+      "pointStyle": "circle",
+      "pointRadius": 3
+    }
+  ],
+  "widgetParams": {
+    "title": "Relation ventes/profit",
+    "legend": true,
+    "legendPosition": "top",
+    "showGrid": true,
+    "showPoints": true,
+    "xLabel": "Ventes",
+    "yLabel": "Profit"
+  }
 }
 
 **BUBBLE** - Bulles (3 variables)
@@ -115,8 +222,26 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
   }],
   "buckets": [],
   "globalFilters": [],
-  "metricStyles": [{"color": "#6366f1", "label": "Performance"}],
-  "widgetParams": {}
+  "metricStyles": [
+    {
+      "color": "#6366f1",
+      "label": "Performance",
+      "borderColor": "#4f46e5",
+      "borderWidth": 1,
+      "opacity": 0.7,
+      "pointStyle": "circle",
+      "pointRadius": 5
+    }
+  ],
+  "widgetParams": {
+    "title": "Analyse à bulles",
+    "legend": true,
+    "legendPosition": "top",
+    "showGrid": true,
+    "showPoints": true,
+    "xLabel": "Ventes",
+    "yLabel": "Profit"
+  }
 }
 
 **TABLE** - Tableau
@@ -128,28 +253,78 @@ Génère des configurations de widgets COMPLÈTES et PRÊTES À L'EMPLOI dans le
   "buckets": [{"field": "region", "type": "terms"}],
   "globalFilters": [],
   "metricStyles": [],
-  "widgetParams": {}
+  "widgetParams": {
+    "title": "Tableau de données",
+    "pageSize": 10
+  }
 }
 
 ═══════════════════════════════════════════════════════════════
 ⚠️ RÈGLES OBLIGATOIRES
 ═══════════════════════════════════════════════════════════════
 
-1. Métriques: {"field": "nom", "agg": "sum|avg|count|min|max|raw", "label": "Label"}
+1. **Métriques**: {"field": "nom", "agg": "sum|avg|count|min|max|raw", "label": "Label"}
    - TOUJOURS "agg" (JAMAIS "aggregation")
    - Radar: + "fields": ["champ1", "champ2", ...]
    - Scatter: + "x": "champ1", "y": "champ2"
    - Bubble: + "x", "y", "r"
 
-2. Buckets: [{"field": "nom", "type": "terms|date_histogram"}]
+2. **Buckets**: [{"field": "nom", "type": "terms|date_histogram"}]
    - JAMAIS ["nom"] ❌
    - KPI/Card/KPIGroup/Scatter/Bubble: []
 
-3. MetricStyles: [{"color": "#couleur", "label": "Nom"}] pour CHAQUE métrique
+3. **MetricStyles** (STYLES PAR MÉTRIQUE - UN OBJET PAR MÉTRIQUE):
+   - Bar/Line: [{"color": "#hex", "label": "Nom", "borderColor": "#hex", "borderWidth": number, ...}]
+   - Pie: [{"colors": ["#hex1", "#hex2", ...], "borderColor": "#hex", "borderWidth": number}]
+   - Scatter/Bubble/Radar: [{"color": "#hex", "label": "Nom", "opacity": 0-1, "pointStyle": "circle", ...}]
+   - KPI/Card/KPIGroup: [{"color": "#hex", "label": "Nom"}]
+   - Table: []
+   
+   🎨 STYLES DISPONIBLES PAR TYPE:
+   - **Bar**: color, borderColor, borderWidth, borderRadius, barThickness
+   - **Line**: color, borderColor, borderWidth, fill, pointStyle, borderDash, stepped
+   - **Pie**: colors (array), borderColor, borderWidth
+   - **Scatter/Bubble**: color, borderColor, borderWidth, opacity, pointStyle, pointRadius, pointHoverRadius
+   - **Radar**: color, borderColor, borderWidth, opacity, fill, pointStyle
 
-4. WidgetParams: {} obligatoire (vide ou avec propriétés)
+4. **WidgetParams** (STYLES GLOBAUX DU WIDGET - TOUJOURS INCLURE):
+   
+   🎨 PARAMÈTRES COMMUNS (tous graphiques):
+   - title: "Titre du graphique" (OBLIGATOIRE)
+   - legend: true/false
+   - legendPosition: "top|bottom|left|right"
+   - showGrid: true/false (sauf pie/radar)
+   - showValues: true/false
+   - titleAlign: "start|center|end"
+   - labelFontSize: number
+   - labelColor: "#hex"
+   
+   📊 PARAMÈTRES SPÉCIFIQUES PAR TYPE:
+   - **Bar**: stacked, horizontal, xLabel, yLabel
+   - **Line**: showPoints, tension, stacked, xLabel, yLabel
+   - **Pie**: cutout ("0%" pour pie, "50%" pour doughnut), labelFormat
+   - **Radar**: pointRadius, pointHoverRadius
+   - **Scatter/Bubble**: showPoints, xLabel, yLabel
+   - **KPI**: valueColor, titleColor, showTrend, format, decimals, currency, trendType
+   - **Card**: description, iconColor, valueColor, showIcon, icon, format, decimals, currency
+   - **KPIGroup**: columns, showTrend, format, decimals, titleColor
+   - **Table**: pageSize
 
-5. GlobalFilters: [] obligatoire (toujours vide pour l'instant)
+5. **GlobalFilters**: [] obligatoire (toujours vide pour l'instant)
+
+═══════════════════════════════════════════════════════════════
+🎨 GUIDE DES STYLES COMPLETS
+═══════════════════════════════════════════════════════════════
+
+**TOUJOURS inclure widgetParams avec au minimum:**
+- title (OBLIGATOIRE pour tous)
+- legend et legendPosition (pour graphiques)
+- Paramètres spécifiques au type de widget
+
+**TOUJOURS inclure metricStyles avec:**
+- Un objet de style par métrique
+- Utiliser les couleurs de DEFAULT_CHART_COLORS
+- Ajouter les propriétés de style appropriées au type de graphique
 
 ═══════════════════════════════════════════════════════════════
 💡 STRATÉGIE
