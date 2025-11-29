@@ -46,7 +46,7 @@ async function loadDataForAnalysis(source: any): Promise<any[]> {
             return await readCsvFile(source.filePath);
         } else if (source.type === "json") {
             if (source.endpoint) {
-                if (source.endpoint.includes('ventes-exemple')) {
+                if (source.endpoint.includes('/demo/ventes')) {
                     const filePath = path.join(__dirname, "../data/ventes-exemple.json");
                     const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
                     return Array.isArray(data) ? data : [data];
