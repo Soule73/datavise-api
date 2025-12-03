@@ -34,7 +34,6 @@ const dashboardService = {
 
     const dashboard = await Dashboard.create({
       ...data,
-      userId,
       ownerId: userId,
       visibility: data.visibility ?? "private",
       autoRefreshIntervalValue: data.autoRefreshIntervalValue,

@@ -46,7 +46,6 @@ const DashboardTimeRangeSchema = new Schema(
 
 const DashboardSchema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     title: { type: String, required: true },
     layout: { type: [DashboardLayoutItemSchema], default: [] },
     ownerId: { type: Schema.Types.ObjectId, ref: "User", required: true },

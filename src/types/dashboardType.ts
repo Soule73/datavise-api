@@ -24,7 +24,6 @@ export interface DashboardHistoryItem {
 }
 
 export interface IDashboard extends mongoose.Document {
-  userId: mongoose.Types.ObjectId;
   title: string;
   layout: DashboardLayoutItem[];
   ownerId: mongoose.Types.ObjectId;
@@ -51,7 +50,6 @@ export interface DashboardCreatePayload extends DashboardBasePayload {
   title: string;
   layout: DashboardLayoutItem[];
   ownerId: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
   visibility: "public" | "private";
 }
 

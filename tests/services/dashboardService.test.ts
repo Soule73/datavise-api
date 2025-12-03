@@ -38,7 +38,6 @@ describe('Dashboard Service', () => {
                 dashboardId: 'dashboard-1',
                 title: 'Dashboard 1',
                 widgets: [],
-                userId: (testUser.user as any)._id,
                 ownerId: (testUser.user as any)._id,
                 visibility: 'private',
                 layout: []
@@ -95,8 +94,7 @@ describe('Dashboard Service', () => {
                 title: 'New Dashboard',
                 visibility: 'private' as const,
                 layout: [],
-                ownerId: (testUser.user as any)._id.toString(),
-                userId: (testUser.user as any)._id.toString()
+                ownerId: (testUser.user as any)._id.toString()
             };
 
             const result = await dashboardService.createDashboard((testUser.user as any)._id.toString(), payload);
@@ -121,7 +119,6 @@ describe('Dashboard Service', () => {
                 dashboardId: 'dashboard-test-delete',
                 title: 'To Delete',
                 widgets: [],
-                userId: (testUser.user as any)._id,
                 ownerId: (testUser.user as any)._id,
                 visibility: 'private',
                 layout: []
@@ -158,7 +155,6 @@ describe('Dashboard Service', () => {
                 dashboardId: 'dashboard-test-share',
                 title: 'Shareable Dashboard',
                 widgets: [],
-                userId: (testUser.user as any)._id,
                 ownerId: (testUser.user as any)._id,
                 visibility: 'private',
                 layout: []
@@ -181,7 +177,6 @@ describe('Dashboard Service', () => {
                 dashboardId: 'dashboard-test-get-shared',
                 title: 'Public Dashboard',
                 widgets: [],
-                userId: (testUser.user as any)._id,
                 ownerId: (testUser.user as any)._id,
                 visibility: 'private',
                 layout: [],
